@@ -1,0 +1,509 @@
+---
+title: "figs4paper.Rmd"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#packages
+require('ggplot2')
+require('loo')
+require('gridExtra')
+require('knitr')
+require('kableExtra')
+require('broom')
+require('purrr')
+require("plotrix")
+
+#set working directory (change accordingly)
+opts_knit$set(root.dir = "/Users/cvangeen/Documents/GitHub/hierarchicalRL/")
+
+#figure size and position
+knitr::opts_chunk$set(fig.width=12, fig.height=6, fig.align = "left") 
+```
+
+## Make Figures for Hierarchical RL Paper
+
+
+******
+******
+
+#### 1. Illustration of the problem of identifiability.
+
+```{r Figure1.1, include=FALSE} 
+#Figure 1: Illustration of the problem of identifiability
+
+#Load params from problematic subj
+subj19 <- read.csv("Analysis/Params/subj19.csv")
+
+#Make plot
+p1 <- ggplot(subj19, aes(x = alpha, y = beta)) + geom_point(alpha = 0.15)+  theme_classic() + labs(x = "Alpha", y = "Beta", subtitle = "Poor Identifiability")
+p1 <- p1 +theme(legend.title = element_blank(), 
+                plot.subtitle = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                legend.key.size = unit(1.5, 'lines'),
+                legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank()) 
+
+#Load params from good subj
+subj2 <- read.csv("Analysis/Params/subj2.csv")
+
+#Make plot
+p2 <- ggplot(subj2, aes(x = alpha, y = beta)) + geom_point(alpha = 0.15)+  theme_classic() + labs(x = "Alpha", y = "Beta", subtitle = "Good Identifiability")
+p2 <- p2 +theme(legend.title = element_blank(), 
+                plot.subtitle = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                legend.key.size = unit(1.5, 'lines'),
+                legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank()) 
+
+```
+```{r Figure 1, fig.cap = "**Figure 1: Illustration of the problem of identifiability.** (A) Random samples from the posterior distribution of parameter estimates derived from an example subject performing a standard RL task. For α close to zero, there is a wide range of β values that explain the data equally well. The same is true for values of α if β is close to zero. With this distribution, it is unclear which particular pair of parameter values would be best, if any. (B) An example of more clearly identifiable parameter values. The posterior distribution is closer to a multivariate Gaussian distribution centered more tightly around a single mode representing the most likely pair of values.", echo = FALSE}
+grid.arrange(p1, p2, nrow = 1)
+```
+******
+******
+
+#### 2. Posterior distributions of population-level parameter estimates, from model M1. 
+```{r figure2.1, include = FALSE}
+parameter_outputM1 <- read.csv("Analysis/Params/parameter_outputM1.csv")
+
+#plot a1, subset for values smaller than 50
+a2 <- ggplot() + 
+  geom_histogram(subset(parameter_outputM1,a2 < 50), mapping = aes(x=a2), binwidth = 2, color = "#fa9fb5", fill = "#fa9fb5", alpha = 0.3) + 
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(a2)), linetype = "dashed", color = "#fa9fb5",lwd = 0.8) +  labs(y = "Count", x = "\u03C4(2)", title = "Second shape parameter for learning rate distribution") + 
+  theme_bw() +
+  theme(plot.subtitle = element_text(size = 12),
+        legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+a1 <- ggplot() + geom_histogram(subset(parameter_outputM1,a1 < 50), mapping = aes(x=a1), binwidth = 2, color = "#f768a1", fill = "#f768a1", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(a2)), linetype = "dashed", color = "#f768a1", lwd = 0.8) + 
+  labs(y = "Count", x= "\u03C4(1)", title = "First shape parameter for learning rate distribution") + 
+  theme_bw() +
+  theme(plot.subtitle = element_text(size = 12),
+        legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+b0_mean <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b0_mean), color = "#990000", fill = "#990000", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b0_mean)), linetype = "dashed", color = "#990000", lwd = 0.8) + 
+ labs(y = "Count", x = "\u03B2(0)", title = "Mean for intercept distribution") + 
+ theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+b1_mean <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b1_mean), color = "#d7301f", fill = "#d7301f", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b1_mean)), linetype = "dashed", color = "#d7301f", lwd = 0.8) + 
+ labs(y = "Count", x = "\u03B2(1)", title = "Mean for inverse temperature distribution") + 
+ theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+
+b0_sd <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b0_sd), color = "#fd8d3c", fill = "#fd8d3c",  alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b0_sd)), linetype = "dashed", color = "#fd8d3c", lwd = 0.8) + 
+ labs(y = "Count", x = "\u03A3(0)", title = "Standard deviation for intercept distribution") + 
+ theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+b1_sd <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b1_sd), color = "#feb24c", fill = "#feb24c", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b1_sd)), linetype = "dashed", color = "#feb24c", lwd = 0.8) + 
+ labs(y = "Count", x = "\u03A3(1)", title = "Standard deviation for inverse temperature distribution") + 
+ theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+```
+
+```{r Figure2, echo=FALSE,message = FALSE, fig.cap = "**Figure 2: Posterior probability distributions for group-level parameters, fit using model M1**. Dashed line corresponds to the median of the each distribution. The distributions for \u03C4(1) and \u03C4(2) have been truncated at 50 for legibility, but are heavy-tailed and extend farther for several uncommon values.", fig.width=17, fig.height=14}
+ grid.arrange(a1, b0_mean, b0_sd, a2, b1_mean, b1_sd, ncol = 3, nrow =2) 
+```
+
+******
+******
+
+#### 3. Reinforcement learning model with dual learning rates and stickiness is more predictive out of sample.
+
+```{r Figure3.1, include = FALSE}
+#Figure 2: The reinforcement learning model with dual learning rates and stickiness is more predictive out of sample
+
+#Create ELPD data frame -- skipped here b/c fit files too large; final csv found in "ELPD_csv"
+##load in stanfits (replace with relevant fits) 
+#fit_m3 <- readRDS("Gershman_Block4_m3.rds")
+#fit_m2 <- readRDS("Gershman_Block4_m2.rds")
+#fit_m1 <- readRDS("Gershman_Block4.rds")
+
+##extract log likelihood
+#log_lik_m3 <- extract_log_lik(fit_m3, parameter_name = "log_lik_new", merge_chains = TRUE)
+#log_lik_m2 <- extract_log_lik(fit_m2, parameter_name = "log_lik_new", merge_chains = TRUE)
+#log_lik_m1 <- extract_log_lik(fit_m1, parameter_name = "log_lik_new", merge_chains = TRUE)
+
+##get loo
+#loo_m1 <- loo(log_lik_m1, save_psis = TRUE, cores = 2)
+#loo_m2 <- loo(log_lik_m2, save_psis = TRUE, cores = 2)
+#loo_m3 <- loo(log_lik_m3, save_psis = TRUE, cores = 2)
+
+##compare -- output of this comparison found in "ELPD_csv"
+#comp <- as.data.frame(loo_compare(loo_m1, loo_m2, loo_m3))
+
+#load in "ELPD_csv"
+comp <- read.csv("Analysis/ELPD_csv/v3_ELPD.csv")
+head(comp)
+#plot
+comp$model <- c("M3", "M2", "M1")
+p4 <- ggplot(comp, aes(x = model, y = elpd_loo, group = model, fill = as.factor(model)), alpha = 0.8) + 
+  geom_bar(stat = "identity") + 
+  geom_errorbar(aes(ymin = elpd_loo - se_elpd_loo, ymax = elpd_loo + se_elpd_loo, group = model), width = 0.15) +
+  theme_classic() + 
+  scale_fill_manual(values = c( "#a1d99b","#41ab5d", "#005a32")) + labs(x = "Model", y = "ELPD (leave-one-out)") + 
+  theme(legend.position = "none") +
+  theme(legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+```
+
+```{r Figure3, echo=FALSE, fig.cap = "**Figure 3: The reinforcement learning model with dual learning rates and stickiness is more predictive out of sample**. Expected log predicted density (ELPD) from leave-one-out approximation for three hierarchically fit reinforcement learning models. Values closer to 0 indicate greater predictive accuracy. The model with dual learning rates and a stickiness parameter (M3) outperforms the models with both double and single learning rates (M2 and M1, respectively). Error bars correspond to the standard errors of the ELPD estimates.", fig.width=6, fig.height=6}
+#prep for table
+names(comp) <- c("Model", "ELPD_diff", "SE_diff", "ELPD_loo", "SE_ELPD_loo", "p_loo", "SE_p_loo", "LOO-IC", "SE_LOO-IC")
+comp$Model <-c("M3: Dual LR + Stickiness", "M2: Dual LR", "M1: Single LR") 
+
+p3 <- comp[,c(1,2:5)] %>%
+  kbl(caption = "Model Comparison") %>%
+  kable_classic(full_width = T, html_font = "Helvetica", position = "left")
+
+p3
+p4
+```
+
+******
+******
+
+#### 4. Hierarchical Bayesian models outperform two common alternatives.
+
+```{r Figure4.1, include=FALSE}
+
+#No pooling vs. Hierarchical pooling
+Block4_infVar_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_infVar_m3.csv")
+Block4_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3.csv")
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_1 <- merge(Block4_m3 , Block4_infVar_m3, by = "subj")
+#positive values mean our model is better
+diff_1$diff <- diff_1$sum.x - diff_1$sum.y
+diff_1$better <- 0
+diff_1$better[which(diff_1$diff > 0)] <- 1
+diff_1$better <- as.factor(diff_1$better)
+
+#t-test
+t1 <- t.test(diff_1$sum.x, diff_1$sum.y, paired = TRUE)
+tab1 <- map_df(list(t1), tidy)
+t1 <- tab1[,] %>%
+  kbl(caption = "T-Test Output (No Pooling vs. Hierarchical Pooling)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+#Plot 
+p5 <- ggplot(data=diff_1, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#7bccc4", "#084594"), labels=c("No Pooling > Hierarchical Pooling", 
+                                                              " Hierarchical Pooling > No Pooling")) + 
+  scale_fill_manual(values = c("#7bccc4", "#084594"), labels=c("No Pooling > Hierarchical Pooling", 
+                                                               "Hierarchical Pooling > No Pooling")) +
+  labs(x="Participant (n = 205)", y="Log Likelihood Ratio") + 
+  theme_classic() + 
+  theme(legend.title = element_blank(), 
+        legend.position= c(0.52, 0.9),
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.97,0.93), 
+                                                                        breaks = c(-0.8, -0.4, 0, 0.4,  0.8))
+```
+
+```{r Figure4.2, include = FALSE}
+#Full pooling vs. Hierarchical pooling
+Block4_noVar_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_noVar_m3.csv")
+Block4_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3.csv")
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_2 <- merge(Block4_m3 , Block4_noVar_m3, by = "subj")
+#positive values mean our model is better
+diff_2$diff <- diff_2$sum.x-diff_2$sum.y
+diff_2$better <- 0
+diff_2$better[which(diff_2$diff > 0)] <- 1
+diff_2$better <- as.factor(diff_2$better)
+
+#t-test
+t2 <- t.test(diff_2$sum.x, diff_2$sum.y, paired = TRUE)
+tab2 <- map_df(list(t2), tidy)
+t2 <- tab2[,] %>%
+  kbl(caption = "T-Test Output (Full Pooling vs. Hierarchical Pooling") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+#Plot
+p6 <- ggplot(data=diff_2, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#c6dbef", "#084594"), labels=c("Full Pooling > Hierarchical Pooling", 
+                                                              "Hierarchical Pooling > Full Pooling")) + 
+  scale_fill_manual(values = c("#c6dbef", "#084594"), labels=c("Full Pooling > Hierarchical Pooling", 
+                                                               "Hierarchical Pooling > Full Pooling")) +
+  labs(x="Participant (n = 205)", y="Log Likelihood Ratio") + 
+  theme_classic() + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), legend.title = element_blank(), legend.position = "top") 
+
+
+p6 <- p6 +theme(legend.title = element_blank(), 
+                legend.position= c(0.52, 0.9),
+                legend.key.size = unit(1.5, 'lines'),
+                legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.97,0.9), 
+                                                                         breaks = c(-0.8, -0.4, 0, 0.4,  0.8))
+
+```
+```{r Figure4, echo=FALSE,fig.cap = "**Figure 4: Hierarchical Bayesian models outperform two common alternatives.** (A) Plot of the difference in log likelihoods (hierarchical model – no pooling model) averaged across trials and MCMC samples for each subject, on held out Block 4 data. Positive values indicate that the hierarchical model has greater predictive accuracy. A paired t-test indicates that held-out log likelihoods are significantly higher on average for the fully hierarchical model, meaning that group-level priors lead to greater predictive accuracy on held-out data (t(204) = 6.55 ; mean = 0.057 [0.040; 0.074]; p < 0.00005). ). (B) Plot of the difference in log likelihoods (hierarchical model – full pooling model) averaged across trials and MCMC samples, for each subject on held out Block 4 data. Positive values indicate that the hierarchical model has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for the fully hierarchical model, meaning that allowing for individual variability leads to greater predictive accuracy on held-out data (t(204) = 4.47, mean = 0.070 [0.040, 0.10], p < 0.00005)."}
+t1
+t2
+grid.arrange(p5, p6, nrow = 1) 
+```
+
+******
+******
+
+#### 5. Hierarchical Bayesian models also outperform methods that extract out-of-sample priors.
+
+```{r Figure5.1, results = FALSE, include=FALSE}
+#log likelihood plots for comparison across model-fitting techniques
+
+#load logliks
+Block4_infVar_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_infVar_m3D2.csv")
+Block4_noVar_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_noVar_m3D2.csv")
+Block4_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3D2.csv")
+Block4_emp_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_emp.csv")
+
+#get means in one df
+log_liks <- as.data.frame(c(1:4))
+log_liks[1,1] <- mean(Block4_noVar_m3D2$sum)
+log_liks[2,1] <- mean(Block4_infVar_m3D2$sum)
+log_liks[3,1] <- mean(Block4_emp_m3$sum)
+log_liks[4,1] <- mean(Block4_m3D2$sum)
+log_liks$model <- NA
+log_liks[1,2] <- "Full Pooling"
+log_liks[2,2] <- "No Pooling"
+log_liks[3,2] <- "Out-of-Sample"
+log_liks[4,2] <- "Hierarchical"
+
+names(log_liks) <- c("Log_Likelihood", "Model")
+
+#create standard errors for plot
+#combine into one DF
+means <- as.data.frame(c(1:160))
+means[1:40,] <- as.data.frame(Block4_m3D2$sum)
+means[1:40,2] <- "full"
+means[41:80,1] <- Block4_infVar_m3D2$sum
+means[41:80,2] <- "no_pooling"
+means[81:120,1] <- Block4_noVar_m3D2$sum
+means[81:120,2] <- "full_pooling"
+means[121:160,1] <- Block4_emp_m3$sum
+means[121:160,2] <- "emp"
+
+names(means) <- c("L_mean", "model")
+
+#get subject's mean across models
+subj <- c(1:40)
+k <- 1
+mean_subj <- as.data.frame(c(1:40))
+for (i in subj){
+  mean_subj[k,] <- (means$L_mean[i] + means$L_mean[40+i] + means$L_mea[80+i] + means$L_mea[120+i])/4
+  k <- k+1
+}
+names(mean_subj) <- c("L_mean_s")
+
+#final SE calculation -- get one for each person for each model
+#L_new=L_s,m-(L_mean_s-L_mean)
+#infinite variance
+L_new_infVar <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_infVar[i,] <- Block4_infVar_m3D2$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_infVar$`c(1:40)`)
+
+#no variance
+L_new_noVar <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_noVar[i,] <- Block4_noVar_m3D2$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_noVar$`c(1:40)`)
+
+#hierarchical
+L_new_full <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_full[i,] <- Block4_m3D2$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_full$`c(1:40)`)
+
+#out-of-sample
+L_new_emp <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_emp[i,] <- Block4_emp_m3$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_emp$`c(1:40)`)
+
+#add SE to dataframe
+log_liks$SE <- std.error(L_new_noVar$`c(1:40)`)
+log_liks$SE[2] <- std.error(L_new_infVar$`c(1:40)`)
+log_liks$SE[3] <- std.error(L_new_emp$`c(1:40)`)
+log_liks$SE[4] <- std.error(L_new_full$`c(1:40)`)
+
+#plot with error bars
+p7 <- ggplot(log_liks, aes (x = reorder(Model, Log_Likelihood), y = Log_Likelihood)) + 
+  geom_bar(stat = "identity", fill = c("#9ecae1","#6baed6", "#3182bd", "#08519c")) +
+  theme(legend.title = element_blank(), 
+        legend.position = "none",
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=16), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())  + theme_classic() + 
+labs(x = "Model Type", y ="Log Likelihood") +
+geom_errorbar(aes(ymin = Log_Likelihood - SE, ymax = Log_Likelihood + SE), width = 0.15) 
+```
+
+```{r Figure5.2, include = FALSE}
+#No pooling vs. out-of-sample prior
+#load
+Block4_m3D2_emp <- read.csv("Analysis/LogLik_csv/v3_Block4_emp.csv")
+Block4_infVar_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_infVar_m3D2.csv")
+
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_3 <- merge(Block4_m3D2_emp , Block4_infVar_m3D2, by = "subj")
+#positive values mean our model is better
+diff_3$diff <- diff_3$sum.x - diff_3$sum.y
+diff_3$better <- 0
+diff_3$better[which(diff_3$diff > 0)] <- 1
+diff_3$better <- as.factor(diff_3$better)
+
+#t-test
+t3 <- t.test(diff_3$sum.x, diff_3$sum.y, paired = TRUE)
+tab3 <- map_df(list(t3), tidy)
+t3 <- tab3[,] %>%
+  kbl(caption = "T-Test Output (No Pooling vs. Out-of-sample Prior)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+
+#Plot
+p8 <- ggplot(data=diff_3, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#7bccc4", "#807dba"), labels=c("No Pooling > Out-of-Sample Prior", 
+                                                              "Out-of-Sample Prior > No Pooling")) + 
+  scale_fill_manual(values = c("#7bccc4", "#807dba"), labels=c("No Pooling > Out-of-Sample Prior", 
+                                                               "Out-of-Sample Prior > No Pooling")) +
+  labs(x="Participant (n = 40)", y="Log Likelihood Ratio") + 
+  theme_classic() +
+  theme(legend.position= c(0.55, 0.9),
+        legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=16), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.05,0.45))
+
+```
+
+```{r Figure5.3, include = FALSE}
+#Hierarchical pooling vs. out-of-sample prior
+#load
+Block4_emp_m3<- read.csv("Analysis/LogLik_csv/v3_Block4_emp.csv")
+Block4_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3D2.csv")
+
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_4 <- merge(Block4_m3D2, Block4_emp_m3, by = "subj")
+#positive values mean first model is better
+diff_4$diff <- diff_4$sum.x - diff_4$sum.y
+diff_4$better <- 0
+diff_4$better[which(diff_4$diff > 0)] <- 1
+diff_4$better <- as.factor(diff_4$better)
+
+#t-test
+t4 <- t.test(diff_4$sum.x, diff_4$sum.y, paired = TRUE)
+
+tab4 <- map_df(list(t4), tidy)
+t4 <- tab4[,] %>%
+  kbl(caption = "T-Test Output (Out-of-Sample Prior vs. Hierarchical Pooling)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+
+#Plot
+p9 <- ggplot(data=diff_4, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#807dba", "#084594"), labels=c("Out-of-Sample Prior > Hierarchical Pooling", 
+                                                              "Hierarchical Pooling > Out-of-Sample Prior")) + 
+  scale_fill_manual(values = c("#807dba", "#084594"), labels=c("Out-of-Sample Prior > Hierarchical Pooling", 
+                                                               "Hierarchical Pooling > Out-of-Sample Prior")) +
+  labs(x="Participant (n = 40)", y="Log Likelihood Ratio") + 
+  theme_classic() + 
+  theme(legend.position= c(0.55, 0.9),
+        legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.05,0.45))
+
+```
+
+```{r plot3, echo=FALSE,fig.cap = "**Figure 5: Extracting out-of-sample priors improves predictive accuracy when compared to full pooling and to no pooling, but not when compared to hierarchical pooling.** (A) Mean of the log-likelihoods for held-out Block 4 data across 40 participants for each of the four candidate models. Value closer to zero indicate higher predictive accuracy. Error bars reflect within-subject differences based on the method described in Cousineau (2015). (B) Plot of the difference in log likelihoods (model with out-of-sample priors – no pooling model) averaged across trials and MCMC samples for each subject, on held out Block 4 data. Positive values indicate that the model that uses out-of-sample empirical priors has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for the model with out-of-sample priors, meaning that out-of-sample priors lead to greater predictive accuracy on held-out data (t(39) = 3.18; mean = 0.039 [0.014; 0.065]; p = 0.0029). (C) Plot of the difference in log likelihoods (hierarchical model - model with out-of-sample priors) averaged across trials and MCMC samples, for each subject on held out Block 4 data. Positive values indicate that the full hierarchical model has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for the hierarchical model, meaning that hierarchically enforcing group-level priors leads to greater predictive accuracy that extracting the priors from held-out data (t(39)= 2.48; mean = 0.014 [0.0025; 0.025]; p = 0.018).", fig.width=15, fig.height=6}
+t3
+t4
+grid.arrange(p7, p8, p9, nrow = 1) 
+```
+

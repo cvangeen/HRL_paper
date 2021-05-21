@@ -1,0 +1,2021 @@
+---
+title: "figs4paper_revised.Rmd"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#packages
+require('ggplot2')
+require('loo')
+require('gridExtra')
+require('knitr')
+require('kableExtra')
+require('broom')
+require('purrr')
+require("plotrix")
+require("ggfortify")
+require("MASS")
+
+#set working directory (change accordingly)
+opts_knit$set(root.dir = "/Users/cvangeen/Documents/GitHub/hierarchicalRL/")
+
+#figure size and position
+knitr::opts_chunk$set(fig.width=12, fig.height=6, fig.align = "left") 
+```
+
+## Make Figures for Hierarchical RL Paper
+
+
+******
+******
+
+#### 1. Illustration of the problem of identifiability.
+
+```{r Figure1.1, include=FALSE} 
+#Figure 1: Illustration of the problem of identifiability
+
+#Load params from problematic subj
+subj19 <- read.csv("Analysis/Params/subj19.csv")
+
+#Make plot
+p1 <- ggplot(subj19, aes(x = alpha, y = beta)) + geom_point(alpha = 0.15)+  theme_classic() + labs(x = "Alpha", y = "Beta", subtitle = "Poor Identifiability")
+p1 <- p1 +theme(legend.title = element_blank(), 
+                plot.subtitle = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                legend.key.size = unit(1.5, 'lines'),
+                legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank()) 
+
+#Load params from good subj
+subj2 <- read.csv("Analysis/Params/subj2.csv")
+
+#Make plot
+p2 <- ggplot(subj2, aes(x = alpha, y = beta)) + geom_point(alpha = 0.15)+  theme_classic() + labs(x = "Alpha", y = "Beta", subtitle = "Good Identifiability")
+p2 <- p2 +theme(legend.title = element_blank(), 
+                plot.subtitle = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                legend.key.size = unit(1.5, 'lines'),
+                legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank()) 
+
+```
+```{r Figure 1, fig.cap = "**Figure 1: Illustration of the problem of identifiability.** (A) Random samples from the posterior distribution of parameter estimates derived from an example subject performing a standard RL task. For α close to zero, there is a wide range of β values that explain the data equally well. The same is true for values of α if β is close to zero. With this distribution, it is unclear which particular pair of parameter values would be best, if any. (B) An example of more clearly identifiable parameter values. The posterior distribution is closer to a multivariate Gaussian distribution centered more tightly around a single mode representing the most likely pair of values.", echo = FALSE}
+grid.arrange(p1, p2, nrow = 1)
+```
+******
+******
+
+#### 2. Posterior distributions of population-level parameter estimates, from model M1. 
+```{r figure2.1, include = FALSE}
+parameter_outputM1 <- read.csv("Analysis/Params/parameter_outputM1.csv")
+
+#plot a1, subset for values smaller than 50
+a2 <- ggplot() + 
+  geom_histogram(subset(parameter_outputM1,a2 < 50), mapping = aes(x=a2), binwidth = 2, color = "#fa9fb5", fill = "white", alpha = 0.3) + 
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(a2)), linetype = "dashed", color = "#fa9fb5",lwd = 0.8) +  labs(y = "Count", x =c(expression(paste(tau, ""[2]))), title = "Second shape parameter for learning rate distribution") + theme_classic() +
+  theme(
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.key.size = unit(1.5, 'lines'),
+    legend.text =
+      element_text(
+        family = "Helvetica",
+        size = 16,
+        margin = margin(
+          t = 0,
+          r = 25,
+          b = 0,
+          l = 0
+        )
+      ),
+    axis.title.x = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 20,
+        r = 0,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.title.y = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 0,
+        r = 25,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.text = element_text(size =
+                               14, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(
+      colour = "black",
+      size = 0.4,
+      linetype = "solid"
+    ),
+    axis.ticks.length = unit(.5, "cm")
+  )
+
+a1 <- ggplot() + geom_histogram(subset(parameter_outputM1,a1 < 50), mapping = aes(x=a1), binwidth = 2, color = "#f768a1", fill = "white", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(a2)), linetype = "dashed", color = "#f768a1", lwd = 0.8) + 
+  labs(y = "Count", x =c(expression(paste(tau, ""[1]))), title = "First shape parameter for learning rate distribution") + 
+   theme_classic() +
+  theme(
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.key.size = unit(1.5, 'lines'),
+    legend.text =
+      element_text(
+        family = "Helvetica",
+        size = 16,
+        margin = margin(
+          t = 0,
+          r = 25,
+          b = 0,
+          l = 0
+        )
+      ),
+    axis.title.x = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 20,
+        r = 0,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.title.y = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 0,
+        r = 25,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.text = element_text(size =
+                               14, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(
+      colour = "black",
+      size = 0.4,
+      linetype = "solid"
+    ),
+    axis.ticks.length = unit(.5, "cm")
+  )
+
+b0_mean <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b0_mean), color = "#990000", fill = "white", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b0_mean)), linetype = "dashed", color = "#990000", lwd = 0.8) + 
+ labs(y = "Count",  x =c(expression(paste(beta, ""[0]))), title = "Mean for intercept distribution") + 
+ theme_classic() +
+  theme(
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.key.size = unit(1.5, 'lines'),
+    legend.text =
+      element_text(
+        family = "Helvetica",
+        size = 16,
+        margin = margin(
+          t = 0,
+          r = 25,
+          b = 0,
+          l = 0
+        )
+      ),
+    axis.title.x = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 20,
+        r = 0,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.title.y = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 0,
+        r = 25,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.text = element_text(size =
+                               14, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(
+      colour = "black",
+      size = 0.4,
+      linetype = "solid"
+    ),
+    axis.ticks.length = unit(.5, "cm")
+  )
+
+b1_mean <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b1_mean), color = "#fd8d3c", fill = "white", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b1_mean)), linetype = "dashed", color = "#fd8d3c", lwd = 0.8) + 
+ labs(y = "Count",  x =c(expression(paste(beta, ""[1]))), title = "Mean for inverse temperature distribution") + 
+ theme_classic() +
+  theme(
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.key.size = unit(1.5, 'lines'),
+    legend.text =
+      element_text(
+        family = "Helvetica",
+        size = 16,
+        margin = margin(
+          t = 0,
+          r = 25,
+          b = 0,
+          l = 0
+        )
+      ),
+    axis.title.x = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 20,
+        r = 0,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.title.y = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 0,
+        r = 25,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.text = element_text(size =
+                               14, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(
+      colour = "black",
+      size = 0.4,
+      linetype = "solid"
+    ),
+    axis.ticks.length = unit(.5, "cm")
+  )
+
+
+b0_sd <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b0_sd), color = "#d7301f", fill = "white",  alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b0_sd)), linetype = "dashed", color = "#d7301f", lwd = 0.8) + 
+ labs(y = "Count", x =c(expression(paste(lambda, ""[0]))), title = "Standard deviation for intercept distribution") + 
+  theme_classic() +
+  theme(
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.key.size = unit(1.5, 'lines'),
+    legend.text =
+      element_text(
+        family = "Helvetica",
+        size = 16,
+        margin = margin(
+          t = 0,
+          r = 25,
+          b = 0,
+          l = 0
+        )
+      ),
+    axis.title.x = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 20,
+        r = 0,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.title.y = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 0,
+        r = 25,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.text = element_text(size =
+                               14, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(
+      colour = "black",
+      size = 0.4,
+      linetype = "solid"
+    ),
+    axis.ticks.length = unit(.5, "cm")
+  )
+
+b1_sd <- ggplot() + geom_histogram(parameter_outputM1, mapping = aes(x=b1_sd), color = "#feb24c", fill = "white", alpha = 0.3) +
+  geom_vline(parameter_outputM1, mapping = aes(xintercept = median(b1_sd)), linetype = "dashed", color = "#feb24c", lwd = 0.8) + 
+ labs(y = "Count", x =c(expression(paste(lambda, ""[1]))), title = "Standard deviation for inverse temperature distribution") + 
+ theme_classic() +
+  theme(
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.key.size = unit(1.5, 'lines'),
+    legend.text =
+      element_text(
+        family = "Helvetica",
+        size = 16,
+        margin = margin(
+          t = 0,
+          r = 25,
+          b = 0,
+          l = 0
+        )
+      ),
+    axis.title.x = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 20,
+        r = 0,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.title.y = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 0,
+        r = 25,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.text = element_text(size =
+                               14, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(
+      colour = "black",
+      size = 0.4,
+      linetype = "solid"
+    ),
+    axis.ticks.length = unit(.5, "cm")
+  )
+```
+
+```{r Figure2A, echo=FALSE,message = FALSE, fig.cap = "**Figure 2A: Posterior probability distributions for group-level parameters, fit using model M1**. Dashed line corresponds to the median of the each distribution. The distributions for \u03C4(1) and \u03C4(2) have been truncated at 50 for legibility, but are heavy-tailed and extend farther for several uncommon values.", fig.width=17, fig.height=6}
+ grid.arrange(a1, b0_mean, b1_mean, a2, b0_sd, b1_sd, ncol = 3, nrow =2) 
+```
+******
+******
+
+#### 2.2 Distributions of fitted hierarchical priors, for model M1. 
+```{r figure2.2, include = FALSE}
+parameter_outputM1 <- read.csv("Analysis/Params/parameter_outputM1.csv")
+
+prior_b0 <- ggdistribution(dnorm, seq(-1.5, 1.5, 0.02), mean = mean(parameter_outputM1$b0_mean), sd = mean(parameter_outputM1$b0_sd), colour = "red", fill = "red") +scale_x_continuous(breaks = c(-1,0,1))+
+  labs(title = "Prior distribution for subject-level intercept", x = "\u03B2(0)") + theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+prior_b1 <- ggdistribution(dnorm, seq(-4, 9, 0.1), mean = mean(parameter_outputM1$b1_mean), sd = mean(parameter_outputM1$b1_sd), colour = "orange", fill = "orange") + scale_x_continuous(breaks = c(-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8)) + labs(title = "Prior distribution for subject-level inverse temperature", x = "\u03B2(1)") + theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+##plot bivarite density
+#get covariance
+
+
+#prepare for plot
+mu <- cbind(mean(parameter_outputM1$b0_mean), mean(parameter_outputM1$b1_mean))
+Sigma <- matrix(c(mean(covariance_M1$X1.1), mean(covariance_M1$X2.1), mean(covariance_M1$X2.1), mean(covariance_M1$X2.2)), nrow =2) 
+
+betas <- mvrnorm(1000000, mu, Sigma)
+betas <- as.data.frame(betas)
+
+
+betas_plot <- ggplot(betas, aes(x = V2, y = V1)) +  stat_density_2d(geom = "polygon", contour = TRUE,
+                                                        aes(fill = after_stat(level)), colour = "orange", size = 1,
+                                                        bins = 5) +
+    scale_fill_gradient2(high="orange", low  = "#ff6f52")  + geom_vline(xintercept =0, linetype = "dashed") + geom_hline(yintercept = 0, linetype = "dashed") +
+     theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.position = "none",
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +  scale_y_continuous(lim = c(-2,2)) + scale_x_continuous(lim=c(-2,6)) + labs( x = "\u03B2(1)", y = "\u03B2(0)", title = "Bivariate prior distribution for subject-level intercept and inverse temperature")
+
+##with actual density
+f <- function(x, y) dmvnorm(cbind(x, y), mu, sigma)
+x <- seq(-1,1, 0.002)
+y <- seq(-3,7, 0.01)
+z <- outer(x, y, f)
+
+contour(x,y,z,drawlabels = FALSE, col= "orange", lwd = 2)
+
+#alpha
+prior_alpha <-
+  ggdistribution(
+    dbeta,
+    seq(0.2, 0.9, 0.001),
+    shape1 = mean(parameter_outputM1$a1),
+    shape2 = mean(parameter_outputM1$a2),
+    colour = "#f768a1",
+  ) +
+  labs(x = "\u03B1") + scale_x_continuous(breaks = c(0.2, 0.4, 0.6, 0.8)) +  theme(
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.key.size = unit(1.5, 'lines'),
+    legend.text =
+      element_text(
+        family = "Helvetica",
+        size = 16,
+        margin = margin(
+          t = 0,
+          r = 25,
+          b = 0,
+          l = 0
+        )
+      ),
+    axis.title.x = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 20,
+        r = 0,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.title.y = element_text(
+      family = "Helvetica",
+      size = 16,
+      margin = margin(
+        t = 0,
+        r = 25,
+        b = 0,
+        l = 0
+      )
+    ),
+    axis.text = element_text(size =
+                               14, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(
+      colour = "black",
+      size = 0.4,
+      linetype = "solid"
+    ),
+    axis.ticks.length = unit(.5, "cm")
+  ) + scale_y_continuous(lim = c(0, 8))
+```
+```{r Figure2B, echo=FALSE,message = FALSE, fig.cap = "**Figure 2B: Fitted hierarchical priors for each of the three parameters in M1.** Each plot corresponds to the prior's probability distribution function, constructed using the mean of the distributions for the corresponding group-level posterior.", fig.width=17, fig.height=6}
+grid.arrange(prior_alpha,prior_b1, prior_b0, ncol = 3, nrow =1) 
+```
+******
+******
+#### 2.3 Distributions of fitted hierarchical priors, for model M3. 
+```{r figure2.3, include = FALSE}
+parameter_outputM3 <- read.csv("/Users/cvangeen/Desktop/HRL_4plots/parameter_outputM3_h.csv")
+
+prior_b0_M3 <- ggdistribution(dnorm, seq(-1.5, 1.5, 0.02), mean = mean(parameter_outputM3$b0_mean), sd = mean(parameter_outputM3$b0_sd), colour = "red", fill = "red") +scale_x_continuous(breaks = c(-1,0,1))+
+  labs(title = "Prior distribution for subject-level intercept", x =c(expression(paste(beta, ""[0])))) + theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+prior_b1_M3 <- ggdistribution(dnorm, seq(-4, 9, 0.1), mean = mean(parameter_outputM3$b1_mean), sd = mean(parameter_outputM3$b1_sd), colour = "orange", fill = "orange") + scale_x_continuous(breaks = c(-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8)) + labs(title = "Prior distribution for subject-level inverse temperature", x =c(expression(paste(beta, ""[1])))) + theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+prior_b2_M3 <- ggdistribution(dnorm, seq(-8, 9, 0.1), mean = mean(parameter_outputM3$b2_mean), sd = mean(parameter_outputM3$b2_sd), colour = "#fec44f", fill = "#fec44f") + scale_x_continuous(breaks = c(-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8)) + labs(title = "Prior distribution for subject-level inverse temperature", x =c(expression(paste(beta, ""[2])))) + theme_bw() + 
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+##plot bivarite density
+ggplot(distrib, aes(x = b1, y = b0)) +  stat_density_2d(geom = "polygon", contour = TRUE,
+                                                        aes(fill = after_stat(level)), colour = "black", size = 0,
+                                                        bins = 5) +
+    scale_fill_gradient2(high="darkgrey", low  = "#ff6f52")  + geom_vline(xintercept =0, linetype = "dashed") + geom_hline(yintercept = 0, linetype = "dashed") +
+     theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.position = "none",
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +  scale_y_continuous(lim = c(-2,2)) + scale_x_continuous(lim=c(-2,6)) + labs( x = "\u03B2(1)", y = "\u03B2(0)", title = "Bivariate prior distribution for subject-level intercept and inverse temperature")
+
+#alpha
+prior_alpha_pos <- ggdistribution(dbeta,seq(0,1,0.001),shape1= mean(parameter_outputM3$a1_pos),shape2=mean(parameter_outputM3$a2_pos), colour = "#f768a1", fill = "#f768a1") +
+  labs(title = "Prior distribution for subject-level learning rate", x = expression(paste(alpha^"+"))) + scale_x_continuous(breaks = c(0.2,0.4,0.6,0.8)) +
+  theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+
+prior_alpha_neg <- ggdistribution(dbeta,seq(0,1,0.001),shape1= mean(parameter_outputM3$a1_neg),shape2=mean(parameter_outputM3$a2_neg), colour = "#f768a1", fill = "#f768a1") +
+  labs(title = "Prior distribution for subject-level learning rate", x = expression(paste(alpha^"-"))) + scale_x_continuous(breaks = c(0.2,0.4,0.6,0.8)) +
+  theme_bw() +
+ theme(plot.subtitle = element_text(size = 12),
+       legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) 
+```
+#### 3. Reinforcement learning model with dual learning rates and stickiness is more predictive out of sample.
+
+```{r Figure3.1, include = FALSE}
+#Figure 2: The reinforcement learning model with dual learning rates and stickiness is more predictive out of sample
+#version without ELPD
+##M2 vs. M1
+Block4_m1 <- read.csv("/Users/cvangeen/Documents/GitHub/hierarchicalRL/Analysis/LogLik_csv/M1/Block4_m1.csv")
+Block4_m2 <- read.csv("/Users/cvangeen/Documents/GitHub/hierarchicalRL/Analysis/LogLik_csv/M2/Block4_m2.csv")
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff <- merge(Block4_m2 , Block4_m1, by = "subj")
+#positive values mean our model is better
+diff$diff <- diff$sum.x - diff$sum.y
+diff$better <- 0
+diff$better[which(diff$diff > 0)] <- 1
+diff$better <- as.factor(diff$better)
+
+#t-test
+t<- t.test(diff$sum.x, diff$sum.y, paired = TRUE)
+tab <- map_df(list(t), tidy)
+t <- tab[,] %>%
+  kbl(caption = "T-Test Output (M1 vs. M2)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+#Plot 
+p4 <- ggplot(data=diff, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c( "#a1d99b","#41ab5d"), labels=c("M1 > M2", 
+                                                              "M2 > M1")) + 
+  scale_fill_manual(values = c( "#a1d99b","#41ab5d"), labels=c("M1 > M2", 
+                                                               "M2 > M1")) +
+  labs(x="Participant (n = 205)", y="Log Likelihood Ratio") + 
+  theme_classic() + 
+  theme(legend.title = element_blank(), 
+        legend.position= c(0.52, 0.9),
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.97,0.93), 
+                                                                        breaks = c(-0.8, -0.4, 0, 0.4,  0.8))
+
+##M2 vs. M3
+Block4_m3 <- read.csv("/Users/cvangeen/Documents/GitHub/hierarchicalRL/Analysis/LogLik_csv/M3/v3_Block4_m3.csv")
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff0 <- merge(Block4_m3 , Block4_m2, by = "subj")
+#positive values mean our model is better
+diff0$diff <- diff0$sum.x - diff0$sum.y
+diff0$better <- 0
+diff0$better[which(diff0$diff > 0)] <- 1
+diff0$better <- as.factor(diff0$better)
+
+#t-test
+t0<- t.test(diff0$sum.x, diff0$sum.y, paired = TRUE)
+tab0 <- map_df(list(t0), tidy)
+t0 <- tab0[,] %>%
+  kbl(caption = "T-Test Output (M2 vs. M3)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+#Plot 
+p4.2 <- ggplot(data=diff0, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c( "#41ab5d","#005a32"), labels=c("M2 > M3", 
+                                                              "M3 > M2")) + 
+  scale_fill_manual(values = c( "#41ab5d","#005a32"), labels=c("M2 > M3", 
+                                                               "M3 > M2")) +
+  labs(x="Participant (n = 205)", y="Log Likelihood Ratio") + 
+  theme_classic() + 
+  theme(legend.title = element_blank(), 
+        legend.position= c(0.52, 0.9),
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.97,0.93), 
+                                                                        breaks = c(-0.8, -0.4, 0, 0.4,  0.8))
+
+##log likelihood plots for comparison across 3 models
+#get means in one df
+log_liks0 <- as.data.frame(c(1:3))
+log_liks0[1,1] <- mean(Block4_m1$sum)
+log_liks0[2,1] <- mean(Block4_m2$sum)
+log_liks0[3,1] <- mean(Block4_m3$sum)
+log_liks0$model <- NA
+log_liks0[1,2] <- "M1"
+log_liks0[2,2] <- "M2"
+log_liks0[3,2] <- "M3"
+
+
+names(log_liks0) <- c("Log_Likelihood", "Model")
+
+#create standard errors for plot
+#combine into one DF
+means0 <- as.data.frame(c(1:615))
+means0[1:205,] <- as.data.frame(Block4_m1$sum)
+means0[1:205,2] <- "M1"
+means0[206:410,1] <- as.numeric(Block4_m2$sum)
+means0[206:410,2] <- "M2"
+means0[411:615,1] <- as.numeric(Block4_m3$sum)
+means0[411:615,2] <- "M3"
+
+
+names(means0) <- c("L_mean", "model")
+
+#get subject's mean across models
+subj <- c(1:205)
+k <- 1
+mean_subj0 <- as.data.frame(c(1:205))
+for (i in subj){
+  mean_subj0[k,] <- (means0$L_mean[i] + means0$L_mean[205+i] + means0$L_mean[410+i])/3
+  k <- k+1
+}
+names(mean_subj0) <- c("L_mean_s")
+
+#final SE calculation -- get one for each person for each model
+#L_new=L_s,m-(L_mean_s-L_mean)
+#M1
+L_new_M1 <- as.data.frame(c(1:205))
+for (i in subj){
+  L_new_M1[i,] <- Block4_m1$sum[i] - (mean_subj0$L_mean_s[i] - mean(means0$L_mean))
+}
+std.error(L_new_M1$`c(1:205)`)
+
+#no variance
+L_new_M2 <- as.data.frame(c(1:205))
+for (i in subj){
+  L_new_M2[i,] <- Block4_m2$sum[i] - (mean_subj0$L_mean_s[i] - mean(means0$L_mean))
+}
+std.error(L_new_M2$`c(1:205)`)
+
+#hierarchical
+L_new_M3 <- as.data.frame(c(1:205))
+for (i in subj){
+  L_new_M3[i,] <- Block4_m3$sum[i] - (mean_subj0$L_mean_s[i] - mean(means0$L_mean))
+}
+std.error(L_new_M3$`c(1:205)`)
+
+#add SE to dataframe
+log_liks0$SE <- std.error(L_new_M1$`c(1:205)`)
+log_liks0$SE[2] <- std.error(L_new_M2$`c(1:205)`)
+log_liks0$SE[3] <- std.error(L_new_M3$`c(1:205)`)
+
+#plot with error bars
+p4.3 <- ggplot(log_liks0, aes (x = reorder(Model, Log_Likelihood), y = Log_Likelihood)) + 
+  geom_bar(stat = "identity", fill = c( "#a1d99b","#41ab5d", "#005a32")) +
+  theme(legend.title = element_blank(), 
+        legend.position = "none",
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=16), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())  + theme_classic() + 
+labs(x = "Model Type", y ="Log Likelihood") +
+geom_errorbar(aes(ymin = Log_Likelihood - SE, ymax = Log_Likelihood + SE), width = 0.15) 
+
+
+```
+
+```{r Figure3, echo=FALSE, fig.cap = "**Figure 3: The reinforcement learning model with dual learning rates and stickiness is more predictive out of sample**. (A) Mean of the log-likelihoods for held-out Block 4 data across all 205 participants for each of the three candidate models. Value closer to zero indicate higher predictive accuracy. Error bars reflect within-subject differences based on the method described in Cousineau (2015). (B) Plot of the difference in log likelihoods (model with one learning rate (M1) – model with two learning rates (M2)) averaged across trials and MCMC samples for each subject, on held out Block 4 data. Positive values indicate that M2 has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for M2, meaning that including two learnings rate parameters leads to greater predictive accuracy on held-out data (t(204) = 3.36; mean = 0.034 [0.014; 0.053]; p = 0.0009). (C) Plot of the difference in log likelihoods (two learning rate model (M2) - model with two learnings rates and stickiness (M3)) averaged across trials and MCMC samples, for each subject on held out Block 4 data. Positive values indicate that M3 has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for M3, meaning that including a stickiness parameter on top of two learning rates leads to greater predictive accuracy (t(204)= 2.76; mean = 0.063 [0.018; 0.11]; p = 0.0063)", fig.width=15, fig.height=6}
+t
+t0
+grid.arrange(p4.3,p4,p4.2, nrow = 1)
+
+```
+
+******
+******
+
+#### 4. Hierarchical Bayesian models outperform two common alternatives.
+
+```{r Figure4.1, include=FALSE}
+
+#No pooling vs. Hierarchical pooling
+Block4_infVar_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_infVar_m3.csv")
+Block4_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3.csv")
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_1 <- merge(Block4_m3 , Block4_infVar_m3, by = "subj")
+#positive values mean our model is better
+diff_1$diff <- diff_1$sum.x - diff_1$sum.y
+diff_1$better <- 0
+diff_1$better[which(diff_1$diff > 0)] <- 1
+diff_1$better <- as.factor(diff_1$better)
+
+#t-test
+t1 <- t.test(diff_1$sum.x, diff_1$sum.y, paired = TRUE)
+tab1 <- map_df(list(t1), tidy)
+t1 <- tab1[,] %>%
+  kbl(caption = "T-Test Output (No Pooling vs. Hierarchical Pooling)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+#Plot 
+p5 <- ggplot(data=diff_1, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#7bccc4", "#084594"), labels=c("No Pooling > Hierarchical Pooling", 
+                                                              " Hierarchical Pooling > No Pooling")) + 
+  scale_fill_manual(values = c("#7bccc4", "#084594"), labels=c("No Pooling > Hierarchical Pooling", 
+                                                               "Hierarchical Pooling > No Pooling")) +
+  labs(x="Participant (n = 205)", y="Log Likelihood Ratio") + 
+  theme_classic() + 
+  theme(legend.title = element_blank(), 
+        legend.position= c(0.52, 0.9),
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.97,0.93), 
+                                                                        breaks = c(-0.8, -0.4, 0, 0.4,  0.8))
+```
+
+```{r Figure4.2, include = FALSE}
+#Full pooling vs. Hierarchical pooling
+Block4_noVar_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_noVar_m3.csv")
+Block4_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3.csv")
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_2 <- merge(Block4_m3 , Block4_noVar_m3, by = "subj")
+#positive values mean our model is better
+diff_2$diff <- diff_2$sum.x-diff_2$sum.y
+diff_2$better <- 0
+diff_2$better[which(diff_2$diff > 0)] <- 1
+diff_2$better <- as.factor(diff_2$better)
+
+#t-test
+t2 <- t.test(diff_2$sum.x, diff_2$sum.y, paired = TRUE)
+tab2 <- map_df(list(t2), tidy)
+t2 <- tab2[,] %>%
+  kbl(caption = "T-Test Output (Full Pooling vs. Hierarchical Pooling") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+#Plot
+p6 <- ggplot(data=diff_2, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#c6dbef", "#084594"), labels=c("Full Pooling > Hierarchical Pooling", 
+                                                              "Hierarchical Pooling > Full Pooling")) + 
+  scale_fill_manual(values = c("#c6dbef", "#084594"), labels=c("Full Pooling > Hierarchical Pooling", 
+                                                               "Hierarchical Pooling > Full Pooling")) +
+  labs(x="Participant (n = 205)", y="Log Likelihood Ratio") + 
+  theme_classic() + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), legend.title = element_blank(), legend.position = "top") 
+
+
+p6 <- p6 +theme(legend.title = element_blank(), 
+                legend.position= c(0.52, 0.9),
+                legend.key.size = unit(1.5, 'lines'),
+                legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+                axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.97,0.9), 
+                                                                         breaks = c(-0.8, -0.4, 0, 0.4,  0.8))
+
+```
+```{r Figure4, echo=FALSE,fig.cap = "**Figure 4: Hierarchical Bayesian models outperform two common alternatives.** (A) Plot of the difference in log likelihoods (hierarchical model – no pooling model) averaged across trials and MCMC samples for each subject, on held out Block 4 data. Positive values indicate that the hierarchical model has greater predictive accuracy. A paired t-test indicates that held-out log likelihoods are significantly higher on average for the fully hierarchical model, meaning that group-level priors lead to greater predictive accuracy on held-out data (t(204) = 6.55 ; mean = 0.057 [0.040; 0.074]; p < 0.00005). ). (B) Plot of the difference in log likelihoods (hierarchical model – full pooling model) averaged across trials and MCMC samples, for each subject on held out Block 4 data. Positive values indicate that the hierarchical model has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for the fully hierarchical model, meaning that allowing for individual variability leads to greater predictive accuracy on held-out data (t(204) = 4.47, mean = 0.070 [0.040, 0.10], p < 0.00005)."}
+t1
+t2
+grid.arrange(p5, p6, nrow = 1) 
+```
+
+******
+******
+
+#### 5. Hierarchical Bayesian models also outperform methods that extract out-of-sample priors.
+
+```{r Figure5.1, results = FALSE, include=FALSE}
+#log likelihood plots for comparison across model-fitting techniques
+
+#load logliks
+Block4_infVar_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_infVar_m3D2.csv")
+Block4_noVar_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_noVar_m3D2.csv")
+Block4_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3D2.csv")
+Block4_emp_m3 <- read.csv("Analysis/LogLik_csv/v3_Block4_emp.csv")
+
+#get means in one df
+log_liks <- as.data.frame(c(1:4))
+log_liks[1,1] <- mean(Block4_noVar_m3D2$sum)
+log_liks[2,1] <- mean(Block4_infVar_m3D2$sum)
+log_liks[3,1] <- mean(Block4_emp_m3$sum)
+log_liks[4,1] <- mean(Block4_m3D2$sum)
+log_liks$model <- NA
+log_liks[1,2] <- "Full Pooling"
+log_liks[2,2] <- "No Pooling"
+log_liks[3,2] <- "Out-of-Sample"
+log_liks[4,2] <- "Hierarchical"
+
+names(log_liks) <- c("Log_Likelihood", "Model")
+
+#create standard errors for plot
+#combine into one DF
+means <- as.data.frame(c(1:160))
+means[1:40,] <- as.data.frame(Block4_m3D2$sum)
+means[1:40,2] <- "full"
+means[41:80,1] <- Block4_infVar_m3D2$sum
+means[41:80,2] <- "no_pooling"
+means[81:120,1] <- Block4_noVar_m3D2$sum
+means[81:120,2] <- "full_pooling"
+means[121:160,1] <- Block4_emp_m3$sum
+means[121:160,2] <- "emp"
+
+names(means) <- c("L_mean", "model")
+
+#get subject's mean across models
+subj <- c(1:40)
+k <- 1
+mean_subj <- as.data.frame(c(1:40))
+for (i in subj){
+  mean_subj[k,] <- (means$L_mean[i] + means$L_mean[40+i] + means$L_mea[80+i] + means$L_mea[120+i])/4
+  k <- k+1
+}
+names(mean_subj) <- c("L_mean_s")
+
+#final SE calculation -- get one for each person for each model
+#L_new=L_s,m-(L_mean_s-L_mean)
+#infinite variance
+L_new_infVar <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_infVar[i,] <- Block4_infVar_m3D2$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_infVar$`c(1:40)`)
+
+#no variance
+L_new_noVar <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_noVar[i,] <- Block4_noVar_m3D2$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_noVar$`c(1:40)`)
+
+#hierarchical
+L_new_full <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_full[i,] <- Block4_m3D2$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_full$`c(1:40)`)
+
+#out-of-sample
+L_new_emp <- as.data.frame(c(1:40))
+for (i in subj){
+  L_new_emp[i,] <- Block4_emp_m3$sum[i] - (mean_subj$L_mean_s[i] - mean(means$L_mean))
+}
+std.error(L_new_emp$`c(1:40)`)
+
+#add SE to dataframe
+log_liks$SE <- std.error(L_new_noVar$`c(1:40)`)
+log_liks$SE[2] <- std.error(L_new_infVar$`c(1:40)`)
+log_liks$SE[3] <- std.error(L_new_emp$`c(1:40)`)
+log_liks$SE[4] <- std.error(L_new_full$`c(1:40)`)
+
+#plot with error bars
+p7 <- ggplot(log_liks, aes (x = reorder(Model, Log_Likelihood), y = Log_Likelihood)) + 
+  geom_bar(stat = "identity", fill = c("#9ecae1","#6baed6", "#3182bd", "#08519c")) +
+  theme(legend.title = element_blank(), 
+        legend.position = "none",
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=16), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())  + theme_classic() + 
+labs(x = "Model Type", y ="Log Likelihood") +
+geom_errorbar(aes(ymin = Log_Likelihood - SE, ymax = Log_Likelihood + SE), width = 0.15) 
+```
+
+```{r Figure5.2, include = FALSE}
+#No pooling vs. out-of-sample prior
+#load
+Block4_m3D2_emp <- read.csv("Analysis/LogLik_csv/v3_Block4_emp.csv")
+Block4_infVar_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_infVar_m3D2.csv")
+
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_3 <- merge(Block4_m3D2_emp , Block4_infVar_m3D2, by = "subj")
+#positive values mean our model is better
+diff_3$diff <- diff_3$sum.x - diff_3$sum.y
+diff_3$better <- 0
+diff_3$better[which(diff_3$diff > 0)] <- 1
+diff_3$better <- as.factor(diff_3$better)
+
+#t-test
+t3 <- t.test(diff_3$sum.x, diff_3$sum.y, paired = TRUE)
+tab3 <- map_df(list(t3), tidy)
+t3 <- tab3[,] %>%
+  kbl(caption = "T-Test Output (No Pooling vs. Out-of-sample Prior)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+
+#Plot
+p8 <- ggplot(data=diff_3, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#7bccc4", "#807dba"), labels=c("No Pooling > Out-of-Sample Prior", 
+                                                              "Out-of-Sample Prior > No Pooling")) + 
+  scale_fill_manual(values = c("#7bccc4", "#807dba"), labels=c("No Pooling > Out-of-Sample Prior", 
+                                                               "Out-of-Sample Prior > No Pooling")) +
+  labs(x="Participant (n = 40)", y="Log Likelihood Ratio") + 
+  theme_classic() +
+  theme(legend.position= c(0.55, 0.9),
+        legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=16), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.05,0.45))
+
+```
+
+```{r Figure5.3, include = FALSE}
+#Hierarchical pooling vs. out-of-sample prior
+#load
+Block4_emp_m3<- read.csv("Analysis/LogLik_csv/v3_Block4_emp.csv")
+Block4_m3D2 <- read.csv("Analysis/LogLik_csv/v3_Block4_m3D2.csv")
+
+#sum.x corresponds to first model; sum.y corresponds to second model
+diff_4 <- merge(Block4_m3D2, Block4_emp_m3, by = "subj")
+#positive values mean first model is better
+diff_4$diff <- diff_4$sum.x - diff_4$sum.y
+diff_4$better <- 0
+diff_4$better[which(diff_4$diff > 0)] <- 1
+diff_4$better <- as.factor(diff_4$better)
+
+#t-test
+t4 <- t.test(diff_4$sum.x, diff_4$sum.y, paired = TRUE)
+
+tab4 <- map_df(list(t4), tidy)
+t4 <- tab4[,] %>%
+  kbl(caption = "T-Test Output (Out-of-Sample Prior vs. Hierarchical Pooling)") %>%
+  kable_classic(full_width = T, html_font = "Helvetica")
+
+
+#Plot
+p9 <- ggplot(data=diff_4, aes(x=reorder(subj, diff), y=diff, group = better, fill = better)) +
+  geom_bar(stat="identity", alpha = 0.8) +  
+  scale_color_manual(values=c("#807dba", "#084594"), labels=c("Out-of-Sample Prior > Hierarchical Pooling", 
+                                                              "Hierarchical Pooling > Out-of-Sample Prior")) + 
+  scale_fill_manual(values = c("#807dba", "#084594"), labels=c("Out-of-Sample Prior > Hierarchical Pooling", 
+                                                               "Hierarchical Pooling > Out-of-Sample Prior")) +
+  labs(x="Participant (n = 40)", y="Log Likelihood Ratio") + 
+  theme_classic() + 
+  theme(legend.position= c(0.55, 0.9),
+        legend.title = element_blank(), 
+        legend.key.size = unit(1.5, 'lines'),
+        legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+        axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) + scale_y_continuous(lim=c(-0.05,0.45))
+
+```
+
+```{r plot3, echo=FALSE,fig.cap = "**Figure 5: Extracting out-of-sample priors improves predictive accuracy when compared to full pooling and to no pooling, but not when compared to hierarchical pooling.** (A) Mean of the log-likelihoods for held-out Block 4 data across 40 participants for each of the four candidate models. Value closer to zero indicate higher predictive accuracy. Error bars reflect within-subject differences based on the method described in Cousineau (2015). (B) Plot of the difference in log likelihoods (model with out-of-sample priors – no pooling model) averaged across trials and MCMC samples for each subject, on held out Block 4 data. Positive values indicate that the model that uses out-of-sample empirical priors has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for the model with out-of-sample priors, meaning that out-of-sample priors lead to greater predictive accuracy on held-out data (t(39) = 3.18; mean = 0.039 [0.014; 0.065]; p = 0.0029). (C) Plot of the difference in log likelihoods (hierarchical model - model with out-of-sample priors) averaged across trials and MCMC samples, for each subject on held out Block 4 data. Positive values indicate that the full hierarchical model has greater predictive accuracy. A paired t-test shows that held-out log likelihoods are significantly higher on average for the hierarchical model, meaning that hierarchically enforcing group-level priors leads to greater predictive accuracy that extracting the priors from held-out data (t(39)= 2.48; mean = 0.014 [0.0025; 0.025]; p = 0.018).", fig.width=15, fig.height=6}
+t3
+t4
+grid.arrange(p7, p8, p9, nrow = 1) 
+```
+#make shrinkage plot
+```{r Bonus_fig1, include = FALSE}
+alphas_hierarch <- read.csv("~/Desktop/HRL_4plots/M1_forCors/alphas_hierarch.csv")
+alphas_infVar <- read.csv("~/Desktop/HRL_4plots/M1_forCors/alphas_infVar.csv")
+alphas_hierarch <- alphas_hierarch[,-1]
+alphas_infVar <- alphas_infVar[,-1]
+
+# Create the function to get the mode
+getmode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
+#create mean df
+a_hierarch <- as.data.frame(t(alphas_hierarch %>%                    
+   summarise_each(funs(mean))))
+
+a_hierarch$mode <- (t(alphas_hierarch %>%                    
+   summarise_each(funs(getmode))))
+
+#bring in credible intervals
+k <- 1
+CIs <- matrix(0, nrow = 205, ncol = 2)
+
+##add 50% credible interval for hierarchical
+for (i in c(1:length(alphas_hierarch))) {
+CIs[k,] <- (quantile(alphas_hierarch[,i], c(0.10,0.9)))
+k <- k + 1
+}
+
+a_hierarch <- cbind(a_hierarch, CIs)
+names(a_hierarch) <- c("Mean_h", "Mode_h", "lower_h", "upper_h")
+ 
+#infinite variance alphas  
+a_infVar <- as.data.frame(t(alphas_infVar %>%                    
+                  summarise_each(funs(mean))))
+
+a_infVar$mode <- t(alphas_infVar %>%                    
+                  summarise_each(funs(getmode)))
+
+#bring in credible intervals
+k <- 1
+CIs_inf <- matrix(0, nrow = 205, ncol = 2)
+
+##add 50% credible interval
+for (i in c(1:length(alphas_infVar))) {
+CIs_inf[k,] <- (quantile(alphas_infVar[,i], c(0.1, 0.90)))
+k <- k + 1
+}
+
+a_infVar <- cbind(a_infVar, CIs_inf)
+names(a_infVar) <- c("Mean_inf", "Mode_inf", "lower_inf", "upper_inf")
+
+a_shrink <- cbind(a_hierarch, a_infVar)
+a_shrink$range_inf <- a_shrink$upper_inf - a_shrink$lower_inf
+a_shrink$range_h <- a_shrink$upper_h - a_shrink$lower_h
+
+##plot means, color by uncertainty
+ggplot() + geom_point(a_shrink,mapping= aes(x = Mean_h, y = Mean_inf, ymax = upper_inf, ymin = lower_inf, color = range),alpha = 0.8, size = 5) + geom_abline(slope = 1, intercept = 0, linetype ="dashed") + theme_classic() + labs(x = "\u03B1 (Hierarchical Pooling)", y = "\u03B1 (No Pooling)") + geom_point(a_shrink, mapping = aes( x = mean(Mean_h), y = mean(Mean_inf)), color = "black", size = 5, shape = 18) + 
+   theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=34, color = "black"), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),axis.ticks.length = unit(.5, "cm"),axis.line = element_line(
+              colour = "black",
+              size = 1,
+              linetype = "solid"))
+
+###Switch to mode to avoid confound (distance smaller for higher uncertainty)
+##create metric: did the estimate move closer to the hierarchical group mean? [how far are you now vs. how far were you]
+###any value > 1 means estimate moved farther, any value < 1 means estimate moved closer
+
+##FIX this
+#####LOAD IN MEAN OF PRIOR DISTRIBUTION, instead of hard-coding
+
+a_shrink$initial_distance <- abs(a_shrink$Mean_inf-mean(a_shrink$Mean_inf))
+a_shrink$change <- abs(a_shrink$Mean_inf - a_shrink$Mean_h)
+a_shrink$move <- NA
+a_shrink$move[which(a_shrink$change < 1)] <- "Closer to group mean"
+a_shrink$move[which(a_shrink$change > 1)] <- "Farther from group mean"
+
+#plot, subsetting for change < 3 for visibility; smaller values mean moved closer to mean
+ggplot() + geom_point(subset(a_shrink,change < 3), mapping= aes(x = initial_distance, y = range, color = scale(change)),alpha = 0.8, size = 10) + theme_classic() + labs(x = "Initial distance from mean of hierarchical prior", y = "Width of credible interval (uncertainty)") +
+    theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +  scale_colour_gradient2(high="black", low = "pink")
+
+
+
+#Binning function
+bin <- function(x, k, labels = "range") {
+  binEdges <- c(min(x) - 0.1, quantile(x, seq(1 / k, 1, 1 / k)))
+  
+  if (labels == "center"){
+    highEdges <- binEdges[2:(k+1)]
+    labs <- as.numeric(lapply(1:k, function(x) mean(c(binEdges[x], highEdges[x]))))
+  }else{
+    labs <- NULL
+  }
+  return(cut(x, binEdges, labels = labs))
+}
+
+a_shrink <- as.data.table(a_shrink)
+a_shrink[, range_bin := as.numeric(as.character(bin(range,10, "center")))]
+a_shrink[, dist_bin := as.numeric(as.character(bin(initial_distance,10, "center")))]
+a_shrink[, change_bin := as.numeric(as.character(bin(change,10, "center")))]
+a_shrink_heat  <- a_shrink[, .(change = mean(change, na.rm = TRUE),
+                              se = sd(change, na.rm = TRUE) / sqrt(.N)), by = .(range_bin, dist_bin)]
+
+ggplot(a_shrink_heat, aes(dist_bin, range_bin, fill= change)) + 
+   geom_tile()
+
+
+#alternative plot
+ggplot() + geom_point(a_shrink, mapping= aes(x = range, y =change), pch=21,  color ="black",alpha = 0.8, fill = "grey", size = 5) +  geom_smooth(subset(a_shrink,change < 3), mapping= aes(x = range, y =change), method = lm, color = "black", se = FALSE) + theme_classic() + labs(y = "Change in subj. estimate (abs(mode no pooling - mode hierarchical pooling))", x = "Estimate uncertainty (no pooling)") +
+    theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +  scale_colour_gradient2(high="black", low = "pink") 
+
+#########make plots for betas
+beta0_hierarch <- read.csv("~/Desktop/HRL_4plots/M1_forCors/beta0_hierarch.csv")
+beta0_infVar <- read.csv("~/Desktop/HRL_4plots/M1_forCors/beta0_infVar.csv")
+beta0_hierarch <- beta0_hierarch[,-1]
+beta0_infVar <- beta0_infVar[,-1]
+
+# Create the function to get the mode
+getmode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+#create mean df
+b0_hierarch <- as.data.frame(t(beta0_hierarch %>%                    
+   summarise_each(funs(mean))))
+
+b0_hierarch$mode <- (t(beta0_hierarch %>%                    
+   summarise_each(funs(getmode))))
+
+#bring in credible intervals
+k <- 1
+CIs <- matrix(0, nrow = 205, ncol = 2)
+
+##add 50% credible interval
+for (i in c(1:length(beta0_hierarch))) {
+CIs[k,] <- (quantile(beta0_hierarch[,i], c(0.25, 0.75)))
+k <- k + 1
+}
+
+b0_hierarch <- cbind(b0_hierarch, CIs)
+names(b0_hierarch) <- c("Mean_h", "Mode_h", "lower_h", "upper_h")
+ 
+#infinite variance alphas  
+b0_infVar <- as.data.frame(t(beta0_infVar %>%                    
+                  summarise_each(funs(mean))))
+
+b0_infVar$mode <- t(beta0_infVar %>%                    
+                  summarise_each(funs(getmode)))
+
+#bring in credible intervals
+k <- 1
+CIs_inf <- matrix(0, nrow = 205, ncol = 2)
+
+##add 50% credible interval
+for (i in c(1:length(beta0_infVar))) {
+CIs_inf[k,] <- (quantile(beta0_infVar[,i], c(0.25, 0.75)))
+k <- k + 1
+}
+
+b0_infVar <- cbind(b0_infVar, CIs_inf)
+names(b0_infVar) <- c("Mean_inf", "Mode_inf", "lower_inf", "upper_inf")
+
+b0_shrink <- cbind(b0_hierarch, b0_infVar)
+b0_shrink$range <- b0_shrink$upper_inf - b0_shrink$lower_inf
+
+
+##plot means, color by uncertainty
+ggplot() + geom_point(b0_shrink,mapping= aes(x = Mean_h, y = Mean_inf, ymax = upper_inf, ymin = lower_inf, color = range),alpha = 0.8, size = 7) + geom_abline(slope = 1, intercept = 0, linetype ="dashed") + theme_classic() + labs(x = "\u03B2(0) (Hierarchical Pooling)", y = "\u03B2(0) (No Pooling)") + geom_point(b0_shrink, mapping = aes( x = mean(Mean_h), y = mean(Mean_inf)), color = "black", size = 5, shape = 18) + 
+  theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=34, color = "black"), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),axis.ticks.length = unit(.5, "cm"),axis.line = element_line(
+              colour = "black",
+              size = 1,
+              linetype = "solid")) +  scale_colour_gradient2(low ="#fc9272", high = "orange") + scale_x_continuous(lim=c(-1.54, 7.5)) + scale_y_continuous(lim=c(-1.54, 7.5))
+
+###Switch to mode to avoid confound (distance smaller for higher uncertainty)
+##create metric: did the estimate move closer to the hierarchical group mean? [how far are you now vs. how far were you]
+###any value > 1 means estimate moved farther, any value < 1 means estimate moved closer
+b0_shrink$initial_distance <- abs(b0_shrink$Mode_inf-0.002541116)
+b0_shrink$change <- abs(a_shrink$Mode_h - a_shrink$Mode_inf)
+b0_shrink$move <- NA
+b0_shrink$move[which(b0_shrink$change < 1)] <- "Closer to group mean"
+b0_shrink$move[which(b0_shrink$change > 1)] <- "Farther from group mean"
+
+#plot, subsetting for change < 3 for visibility; smaller values mean moved closer to mean
+ggplot() + geom_point(subset(b0_shrink,change < 3), mapping= aes(x = initial_distance, y = range, fill = scale(change)), alpha = 0.5, size = 10, pch = 21, color = "grey") + theme_classic() + labs(x = "Initial distance from mean of hierarchical prior", y = "Width of credible interval (uncertainty)") +
+    theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +  scale_fill_gradient2(high="black", low = "white") 
+
+#alternative plot
+ggplot() + geom_point(subset(b0_shrink,change < 3), mapping= aes(x =range, y =change), pch=21,  color ="black",alpha = 0.8, fill = "grey", size = 5) +  geom_smooth(subset(b0_shrink,change < 3), mapping= aes(x = range, y =change), method = lm, color = "black", se = FALSE) + theme_classic() + labs(y = "Change in subj. estimate (no pooling vs. hierarchical pooling)", x = "Estimate uncertainty (no pooling)")  +
+    theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) 
+
+
+##for b1
+beta1_hierarch <- read.csv("~/Desktop/HRL_4plots/M1_forCors/beta1_hierarch.csv")
+beta1_infVar <- read.csv("~/Desktop/HRL_4plots/M1_forCors/beta1_infVar.csv")
+beta1_hierarch <- beta1_hierarch[,-1]
+beta1_infVar <- beta1_infVar[,-1]
+
+# Create the function to get the mode
+getmode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+#create mean df
+b1_hierarch <- as.data.frame(t(beta1_hierarch %>%                    
+   summarise_each(funs(mean))))
+
+b1_hierarch$mode <- (t(beta1_hierarch %>%                    
+   summarise_each(funs(getmode))))
+
+#bring in credible intervals
+k <- 1
+CIs <- matrix(0, nrow = 205, ncol = 2)
+
+##add 50% credible interval
+for (i in c(1:length(beta1_hierarch))) {
+CIs[k,] <- (quantile(beta1_hierarch[,i], c(0.25, 0.75)))
+k <- k + 1
+}
+
+b1_hierarch <- cbind(b1_hierarch, CIs)
+names(b1_hierarch) <- c("Mean_h", "Mode_h", "lower_h", "upper_h")
+ 
+#infinite variance alphas  
+b1_infVar <- as.data.frame(t(beta1_infVar %>%                    
+                  summarise_each(funs(mean))))
+
+b1_infVar$mode <- t(beta1_infVar %>%                    
+                  summarise_each(funs(getmode)))
+
+#bring in credible intervals
+k <- 1
+CIs_inf <- matrix(0, nrow = 205, ncol = 2)
+
+##add 50% credible interval
+for (i in c(1:length(beta1_infVar))) {
+CIs_inf[k,] <- (quantile(beta1_infVar[,i], c(0.25, 0.75)))
+k <- k + 1
+}
+
+b1_infVar <- cbind(b1_infVar, CIs_inf)
+names(b1_infVar) <- c("Mean_inf", "Mode_inf", "lower_inf", "upper_inf")
+
+b1_shrink <- cbind(b1_hierarch, b1_infVar)
+b1_shrink$range <- b1_shrink$upper_inf - b1_shrink$lower_inf
+
+##plot means, color by uncertainty
+ggplot() + geom_point(b1_shrink,mapping= aes(x = Mean_h, y = Mean_inf, ymax = upper_inf, ymin = lower_inf, color = range),alpha = 0.8, size = 5) + geom_abline(slope = 1, intercept = 0, linetype ="dashed") + theme_classic() + labs(x = "\u03B2(1) (Hierarchical Pooling)", y = "\u03B2(1) (No Pooling)") + geom_point(b1_shrink, mapping = aes(x = mean(Mean_h), y = mean(Mean_inf)), color = "black", size = 5, shape = 18) + 
+ theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=34, color = "black"), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),axis.ticks.length = unit(.5, "cm"),axis.line = element_line(
+              colour = "black",
+              size = 1,
+              linetype = "solid")) +  scale_colour_gradient2(low ="#fff7bc", high = "#ec7014") + scale_x_continuous(lim = c(-10, 15)) + scale_y_continuous(lim = c(-10, 15))
+
+###Switch to mode to avoid confound (distance smaller for higher uncertainty)
+##create metric: did the estimate move closer to the hierarchical group mean? [how far are you now vs. how far were you]
+###any value > 1 means estimate moved farther, any value < 1 means estimate moved closer
+b1_shrink$initial_distance <- abs(b1_shrink$Mode_inf-2.389906)
+b1_shrink$change <- abs(b1_shrink$Mean_h - b1_shrink$Mean_inf)
+b1_shrink$move <- NA
+b1_shrink$move[which(b1_shrink$change < 1)] <- "Closer to group mean"
+b1_shrink$move[which(b1_shrink$change > 1)] <- "Farther from group mean"
+
+#plot, subsetting for change < 3 for visibility; smaller values mean moved closer to mean
+ggplot() + geom_point(subset(b1_shrink,change < 3), mapping= aes(x = initial_distance, y = range, fill = scale(change)), alpha = 0.5, size = 10, pch = 21, color = "grey") + theme_classic() + labs(x = "Initial distance from mean of hierarchical prior", y = "Width of credible interval (uncertainty)") +
+    theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +  scale_fill_gradient2(high="black", low = "white") 
+
+#alternative plot
+ggplot() + geom_point(subset(b1_shrink,change < 3), mapping= aes(x = initial_distance+range, y =change), pch=21,  color ="black",alpha = 0.8, fill = "grey", size = 5) +  geom_smooth(subset(b1_shrink,change < 3), mapping= aes(x = initial_distance+range, y =change), method = lm, color = "black", se = FALSE) + theme_classic() + labs(x = "Initial distance from mean of hierarchical prior + Uncertainty", y = "Movement towards mean of hierarchical prior") +
+    theme_bw() +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) 
+
+```
+##Make within subject correlation plot with M1
+```{r Bonus_fig2, include = FALSE}
+#join all parameter estimates
+names(b1_infVar) <- c("b1_Mean_inf", "Mode_inf", "lower_inf", "upper_inf")
+names(b1_hierarch) <- c("b1_Mean_h", "Mode_h", "lower_h", "upper_h")
+
+names(b0_hierarch) <- c("b0_Mean_h", "Mode_h", "lower_h", "upper_h")
+names(b0_infVar) <- c("b0_Mean_inf", "Mode_inf", "lower_inf", "upper_inf")
+
+names(a_hierarch) <- c("a_Mean_h", "Mode_h", "lower_h", "upper_h")
+names(a_infVar) <- c("a_Mean_inf", "Mode_inf", "lower_inf", "upper_inf")
+
+subj_params <- cbind(a_hierarch, a_infVar, b0_hierarch, b0_infVar, b1_hierarch, b1_infVar)
+
+#create correlation df
+#for hierarchical model
+cor <- as.data.frame(cor(a_hierarch$a_Mean_h, b0_hierarch$b0_Mean_h,method = c("pearson")))
+cor[2,] <- as.data.frame(cor(a_hierarch$a_Mean_h, b1_hierarch$b1_Mean_h,method = c("pearson")))
+cor[3,] <- as.data.frame(cor(b0_hierarch$b0_Mean_h, b1_hierarch$b1_Mean_h,method = c("pearson")))
+cor[,2] <- c("a_b0", "a_b1", "b0_b1")
+cor[,3] <- "Hierarchical"
+
+names(cor) <- c("cor", "params", "model")
+
+#for infVar
+cor[4,] <- as.data.frame(cor(a_infVar$a_Mean_inf, b0_infVar$b0_Mean_inf, method = c("pearson")))
+cor[5,] <- as.data.frame(cor(a_infVar$a_Mean_inf, b1_infVar$b1_Mean_inf,method = c("pearson")))
+cor[6,] <- as.data.frame(cor(b0_infVar$b0_Mean_inf, b1_infVar$b1_Mean_inf,method = c("pearson")))
+cor[4:6,2] <- c("a_b0", "a_b1", "b0_b1")
+cor[4:6,3] <- "No Pooling"
+
+#load in emp from file
+#create mean dfs
+a_emp <- as.data.frame(t(alphas_emp %>%                    
+   summarise_each(funs(mean))))
+
+a_emp$se <- as.data.frame(t(alphas_emp %>%                    
+   summarise_each(funs(std.error))))
+
+names(a_emp) <- c("a_Mean_emp", "SE")
+
+b0_emp <- as.data.frame(t(beta0_emp %>%                    
+   summarise_each(funs(mean))))
+
+b0_emp$se <- as.data.frame(t(beta0_emp %>%                    
+   summarise_each(funs(std.error))))
+
+names(b0_emp) <- c("b0_Mean_emp", "SE")
+
+b1_emp <- as.data.frame(t(beta1_emp %>%                    
+   summarise_each(funs(mean))))
+
+b1_emp$se <- as.data.frame(t(beta1_emp %>%                    
+   summarise_each(funs(std.error))))
+
+names(b1_emp) <- c("b1_Mean_emp", "SE")
+
+#add correlations to dataframe (for emp)
+
+#for emp
+cor[7,] <- as.data.frame(cor(a_emp$a_Mean_emp, b0_emp$b0_Mean_emp,method = c("pearson")))
+cor[8,] <- as.data.frame(cor(a_emp$a_Mean_emp, b1_emp$b1_Mean_emp,method = c("pearson")))
+cor[9,] <- as.data.frame(cor(b0_emp$b0_Mean_emp, b1_emp$b1_Mean_emp,method = c("pearson")))
+cor[7:9,2] <- c("a_b0", "a_b1", "b0_b1")
+cor[7:9,3] <- "Out-of-sample Prior"
+
+#Plot
+ggplot(data=cor, aes(x=params, y=cor, fill=model, color = model)) +
+    geom_bar(stat="identity", color="black", position=position_dodge()) +
+  scale_fill_manual(values = c("#08519c", "#6baed6", "#3182bd")) + scale_color_manual(values = c("#6baed6", "#3182bd", "#08519c")) + 
+      theme_bw() + geom_hline(yintercept = 0) + labs(y = "Pearson's Correlation Coefficient", x="") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) 
+
+###alternative: within subject correlation, and then get the mean
+#for model with empirical prior
+k <- 1
+cor_within_emp <- as.data.frame(replicate(40,NA))
+for (i in c(1:length(alphas_emp))){
+cor_within_emp[k,] <- as.data.frame(cor(alphas_emp[,i], beta0_emp[,i],method = c("pearson")))
+k <- k+1
+}
+
+k <- 1
+for (i in c(1:length(alphas_emp))){
+cor_within_emp[k,2] <- as.data.frame(cor(alphas_emp[,i], beta1_emp[,i],method = c("pearson")))
+k <- k+1
+}
+
+k <- 1
+for (i in c(1:length(beta1_emp))){
+cor_within_emp[k,3] <- as.data.frame(cor(beta0_emp[,i], beta1_emp[,i],method = c("pearson")))
+k <- k+1
+}
+
+names(cor_within_emp) <- c("a_vs_b0", "a_vs_b1", "b0_vs_b1")
+
+
+#infVar
+#change length of i depending on how many subjects to include
+k <- 1
+cor_within_inf <- as.data.frame(replicate(40,NA))
+for (i in c(1:length(alphas_emp))){
+cor_within_inf[k,] <- as.data.frame(cor(alphas_infVar[,i], beta0_infVar[,i],method = c("pearson")))
+k <- k+1
+}
+
+k <- 1
+for (i in c(1:length(alphas_emp))){
+cor_within_inf[k,2] <- as.data.frame(cor(alphas_infVar[,i], beta1_infVar[,i],method = c("pearson")))
+k <- k+1
+}
+
+k <- 1
+for (i in c(1:length(beta1_emp))){
+cor_within_inf[k,3] <- as.data.frame(cor(beta0_infVar[,i], beta1_infVar[,i],method = c("pearson")))
+k <- k+1
+}
+
+names(cor_within_inf) <- c("a_vs_b0", "a_vs_b1", "b0_vs_b1")
+
+
+#hierarchical
+k <- 1
+cor_within_h <- as.data.frame(replicate(40,NA))
+for (i in c(1:length(alphas_emp))){
+cor_within_h[k,] <- as.data.frame(cor(alphas_hierarch[,i], beta0_hierarch[,i],method = c("pearson")))
+k <- k+1
+}
+
+k <- 1
+for (i in c(1:length(alphas_emp))){
+cor_within_h[k,2] <- as.data.frame(cor(alphas_hierarch[,i], beta1_hierarch[,i],method = c("pearson")))
+k <- k+1
+}
+
+k <- 1
+for (i in c(1:length(beta1_emp))){
+cor_within_h[k,3] <- as.data.frame(cor(beta0_hierarch[,i], beta1_hierarch[,i],method = c("pearson")))
+k <- k+1
+}
+
+names(cor_within_h) <- c("a_vs_b0", "a_vs_b1", "b0_vs_b1")
+
+#get means and se of correlations
+cor_within_H <- as.data.frame(t(cor_within_h %>%                    
+   summarise_each(funs(mean))))
+
+cor_within_H$se <- (t(cor_within_h %>%                    
+   summarise_each(funs(std.error))))
+
+cor_within_H$model <- c("Hierarchical")
+
+names(cor_within) <- c("Mean", "SE", "Model")
+
+cor_within_INF <-as.data.frame(t(cor_within_inf %>%                    
+   summarise_each(funs(mean))))
+
+cor_within_INF[,2] <- (t(cor_within_inf %>%                    
+   summarise_each(funs(std.error))))
+
+cor_within_INF$model <- c("No Pooling")
+
+names(cor_within_INF) <- c("Mean", "SE", "Model")
+
+cor_within_EMP <-as.data.frame(t(cor_within_emp %>%                    
+   summarise_each(funs(mean))))
+
+cor_within_EMP[,2] <- (t(cor_within_emp %>%                    
+   summarise_each(funs(std.error))))
+
+cor_within_EMP$model <- c("Out-of-Sample Prior")
+
+names(cor_within_EMP) <- c("Mean", "SE", "Model")
+
+#bring together means
+cor_within_H[4:6,1] <- cor_within_EMP$Mean
+cor_within_H[7:9,1] <- cor_within_INF$Mean
+
+#bring together se
+cor_within_H[4:6,2] <-  cor_within_EMP$SE[,1]
+cor_within_H[7:9,2] <-  cor_within_INF$SE[,1]
+
+cor_within_H$model[4:6] <- c("Out-of-Sample Prior")
+cor_within_H$model[7:9] <- c("No Pooling")
+ 
+COR <- cor_within_H
+COR$Params <- c("a_vs_b0", "a_vs_b1", "b0_vs_b1")
+
+COR$se <- as.numeric(COR$se[,1])
+
+#plot
+ggplot() +
+    geom_bar(data=COR,mapping = aes(x=Params, y=V1, fill=model, color = model), stat="identity", color="black", position=position_dodge()) +
+  geom_errorbar(COR, mapping = aes(x=Params, y=V1, ymin=V1-se, ymax=V1+se, group = model), width=.2, position=position_dodge(0.9)) +
+      theme_bw() + geom_hline(yintercept = 0) + labs(y  = "Pearson's Correlation Coefficient", x="") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +scale_fill_manual(values = c("#08519c", "#6baed6", "#3182bd")) + scale_color_manual(values = c("#6baed6", "#3182bd", "#08519c"))
+```
+##Individual difference plots
+```{r Bonus_fig2, include = FALSE}
+#plot for empirical prior model
+#average relevant columns (get 4000 samples/subj, averaged across trials)
+pe_emp <- as.data.frame(apply(fit$delta[,,]^2,1:2,FUN =mean))
+
+inv_temp <- as.data.frame(apply(fit$beta[,,2],1:2,FUN =mean))
+#prep for correlation
+inv_temp <- as.data.frame(t(as.matrix(inv_temp)))
+pe_emp <- as.data.frame(t(as.matrix(pe_emp)))
+
+#create correlation distribution
+k <- 1
+cor_distrib <- replicate(4000,NA)
+
+for (i in c(1:4000)){
+cor_distrib[k] <-cor(pe_emp[,i], inv_temp[,i])
+k <-k+1
+}
+
+cor_distrib <- as.data.frame(cor_distrib)
+
+#plot
+ggplot(cor_distrib, aes(cor_distrib)) + geom_histogram(color = "#3182bd", fill = "#3182bd", bins = 50) + theme_bw() + geom_vline(xintercept = mean(cor_distrib$cor_distrib), linetype = "dashed") + labs(x="Correlation", y = "") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
+
+#make plot with average per subject
+ind_diff <- as.data.frame(t((pe_emp %>%  summarise_each(funs(mean)))))
+ind_diff$inv_temp <- (t((inv_temp %>%  summarise_each(funs(mean)))))[,1]
+
+ggplot(ind_diff, aes(inv_temp, V1)) + geom_point(size = 6, alpha = 0.8, color = c("#3182bd")) + geom_smooth(method = lm, se = FALSE, color = "black") + labs(x = "Inverse Temperature", y = "Mean-squared error") + theme_bw() +
+  theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
+
+##individual differences for hierarchical model
+pe_h <- read.csv("~/Desktop/HRL_4plots/pe_h.csv", header=FALSE)
+inv_temp_h <- read.csv("~/Desktop/HRL_4plots/inv_temp_h.csv", header=FALSE)
+
+inv_temp_h <- inv_temp_h[-1,-1]
+pe_h <- pe_h[-1,-1]
+
+###subset for only first 40 people (first 40 columns)
+inv_temp_h <- inv_temp_h[,1:40]
+pe_h <- pe_h[,1:40]
+
+#figure out better way, for now -- turn into numeric like this
+pe_H <- matrix(NA,4000,40)
+k <- 1
+for (i in c(1:40)){
+pe_H[,k] <- as.numeric(as.character(pe_h[,i]))
+k <- k+1
+}
+
+#for invtemp
+inv_temp_H <- matrix(NA,4000,40)
+k <- 1
+for (i in c(1:40)){
+inv_temp_H[,k] <- as.numeric(as.character(inv_temp_h[,i]))
+k <- k+1
+}
+
+inv_temp_H <- as.data.frame(t(as.matrix(inv_temp_H)))
+
+pe_H <- as.data.frame(t(as.matrix(pe_H)))
+
+#create correlation distribution
+k <- 1
+cor_distrib_h <- replicate(4000,NA)
+
+for (i in c(1:4000)){
+cor_distrib_h[k] <-cor(pe_H[,i], inv_temp_H[,i])
+k <-k+1
+}
+
+cor_distrib_h <- as.data.frame(cor_distrib_h)
+
+#plot
+ggplot(cor_distrib_h, aes(cor_distrib_h)) + geom_histogram(color = "#08519c", fill = "#08519c", bins = 50) + theme_bw() + geom_vline(xintercept = mean(cor_distrib_h$cor_distrib_h), linetype = "dashed") + labs(x="Correlation", y = "") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
+
+#scatter plot
+##do this before transpose that happens for previous plot
+pe_H <- as.data.frame(pe_H)
+ind_diff_h <- as.data.frame(t((pe_H %>%  summarise_each(funs(mean)))))
+inv_temp_H <- as.data.frame(inv_temp_H)
+ind_diff_h$inv_temp <- (t((inv_temp_H %>%  summarise_each(funs(mean)))))[,1]
+
+ggplot(ind_diff_h, aes(inv_temp, V1)) + geom_point(size = 6, alpha = 0.8, color = c("#08519c")) + geom_smooth(method = lm, se = FALSE, color = "black") + labs(x = "Inverse Temperature", y = "Mean-squared error") + theme_bw() +
+  theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
+
+##individual differences for infinite variance model
+pe_inf <- read.csv("~/Desktop/HRL_4plots/pe_infVar.csv", header=FALSE)
+inv_temp_inf <- read.csv("~/Desktop/HRL_4plots/inv_temp_inf.csv", header=FALSE)
+
+inv_temp_inf <- inv_temp_inf[-1,-1]
+pe_inf <- pe_inf[-1,-1]
+
+##subset to only first 40
+inv_temp_inf <- inv_temp_inf[,1:40]
+pe_inf <- pe_inf[,1:40]
+
+#figure out better way, for now -- turn into numeric like this
+pe_INF <- matrix(NA,4000,40)
+k <- 1
+for (i in c(1:40)){
+pe_INF[,k] <- as.numeric(as.character(pe_inf[,i]))
+k <- k+1
+}
+
+#for invtemp
+inv_temp_INF <- matrix(NA,4000,40)
+k <- 1
+for (i in c(1:40)){
+inv_temp_INF[,k] <- as.numeric(as.character(inv_temp_inf[,i]))
+k <- k+1
+}
+
+inv_temp_INF <- as.data.frame(t(as.matrix(inv_temp_INF)))
+
+pe_INF <- as.data.frame(t(as.matrix(pe_INF)))
+
+#create correlation distribution
+k <- 1
+cor_distrib_INF <- replicate(4000,NA)
+
+for (i in c(1:4000)){
+cor_distrib_INF[k] <-cor(pe_INF[,i], inv_temp_INF[,i])
+k <-k+1
+}
+
+cor_distrib_INF <- as.data.frame(cor_distrib_INF)
+
+#plot
+ggplot(cor_distrib_INF, aes(cor_distrib_INF)) + geom_histogram(color = c("#6baed6"), fill = c("#6baed6"), bins = 50) + theme_bw() + geom_vline(xintercept = mean(cor_distrib_INF$cor_distrib_INF), linetype = "dashed") + labs(x="Correlation", y = "") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
+
+#scatter plot
+##do this before transpose that happens for previous plot
+pe_INF <- as.data.frame(pe_INF)
+ind_diff_inf <- as.data.frame(t((pe_INF %>%  summarise_each(funs(mean)))))
+inv_temp_INF <- as.data.frame(inv_temp_INF)
+ind_diff_inf$inv_temp <- (t((inv_temp_INF %>%  summarise_each(funs(mean)))))[,1]
+
+ggplot(ind_diff_inf, aes(inv_temp, V1)) + geom_point(size = 6, alpha = 0.8, color = c("#6baed6")) + geom_smooth(method = lm, se = FALSE, color = "black") + labs(x = "Inverse Temperature", y = "Mean-squared error") + theme_bw() +
+  theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
+
+```
+##Make within subject correlation plot with M3
+```{r Bonus_fig2, include = FALSE}
+#load alphas and create average dataset
+alphas_neg_hM3 <- read.csv("~/Desktop/HRL_4plots/M3_forCors/alphas_neg_hM3.csv")
+alphas_neg_hM3 <- alphas_neg_hM3[,-1]
+alphas_pos_hM3 <- read.csv("~/Desktop/HRL_4plots/M3_forCors/alphas_pos_hM3.csv")
+alphas_pos_hM3 <- alphas_pos_hM3[,-1]
+
+alphas_neg_infM3 <- read.csv("~/Desktop/HRL_4plots/M3_forCors/alphas_neg_infM3.csv")
+alphas_neg_infM3 <- alphas_neg_infM3[,-1]
+alphas_pos_infM3 <- read.csv("~/Desktop/HRL_4plots/M3_forCors/alphas_pos_infM3.csv")
+alphas_pos_infM3 <- alphas_pos_infM3[,-1]
+
+alpha_pos_emp <- as.data.frame(fit_emp_M3[["alpha"]][,,1])
+alpha_neg_emp <- as.data.frame(fit_emp_M3[["alpha"]][,,2])
+
+#create mean dfs
+a_neg_h <- as.data.frame(t(alphas_neg_hM3 %>%                    
+   summarise_each(funs(mean))))
+names(a_neg_h) <- c("a_neg_h")
+
+a_pos_h <- as.data.frame(t(alphas_pos_hM3 %>%                    
+   summarise_each(funs(mean))))
+names(a_pos_h) <- c("a_pos_h")
+
+a_neg_inf <- as.data.frame(t(alphas_neg_infM3 %>%                    
+   summarise_each(funs(mean))))
+names(a_neg_inf) <- c("a_neg_inf")
+
+a_pos_inf <- as.data.frame(t(alphas_pos_infM3 %>%                    
+   summarise_each(funs(mean))))
+names(a_pos_inf) <- c("a_pos_inf")
+
+a_neg_emp <- as.data.frame(t(alpha_neg_emp %>%                    
+   summarise_each(funs(mean))))
+names(a_neg_emp) <- c("a_neg_emp")
+
+a_pos_emp <- as.data.frame(t(alpha_pos_emp %>%                    
+   summarise_each(funs(mean))))
+names(a_pos_emp) <- c("a_pos_emp")
+
+#b1
+b1_hM3 <- read.csv("~/Desktop/HRL_4plots/M3_forCors/beta1_hM3.csv")
+b1_hM3 <- b1_hM3[,-1]
+b1_infM3 <- read.csv("~/Desktop/HRL_4plots/M3_forCors/beta1_infVarM3.csv")
+b1_infM3 <- b1_infM3[,-1]
+
+beta1_emp <- as.data.frame(fit_emp_M3[["beta"]][,,2])
+
+#create mean dfs
+b1_h <- as.data.frame(t(b1_hM3 %>%                    
+   summarise_each(funs(mean))))
+names(b1_h) <- c("b1_h")
+
+b1_inf <- as.data.frame(t(b1_infM3 %>%                    
+   summarise_each(funs(mean))))
+names(b1_inf) <- c("b1_inf")
+
+b1_emp <- as.data.frame(t(beta1_emp %>%                    
+   summarise_each(funs(mean))))
+names(b1_emp) <- c("b1_emp")
+
+
+subj_params <- cbind(a_neg_h, a_neg_inf, a_pos_h, a_pos_inf,  b1_h, b1_inf)
+params_emp <- cbind(a_neg_emp, a_pos_emp, b1_emp)
+
+#create correlation df
+#for hierarchical model
+cor <- as.data.frame(cor(subj_params$a_neg_h, subj_params$a_pos_h,method = c("pearson")))
+cor[2,] <- as.data.frame(cor(subj_params$a_pos_h, subj_params$b1_h,method = c("pearson")))
+cor[3,] <- as.data.frame(cor(subj_params$a_neg_h, subj_params$b1_h,method = c("pearson")))
+
+cor[,2] <- c("a+_a-", "a+_b1", "a-_b1")
+cor[,3] <- "Hierarchical"
+
+names(cor) <- c("cor", "params", "model")
+
+#for infVar
+cor[4,] <- as.data.frame(cor(subj_params$a_pos_inf, subj_params$a_neg_inf, method = c("pearson")))
+cor[5,] <- as.data.frame(cor(subj_params$a_pos_inf, subj_params$b1_inf, method = c("pearson")))
+cor[6,] <- as.data.frame(cor(subj_params$a_neg_inf, subj_params$b1_inf,method = c("pearson")))
+cor[4:6,2] <- c("a+_a-", "a+_b1", "a-_b1")
+cor[4:6,3] <- "No Pooling"
+
+#for emp
+cor[7,] <- as.data.frame(cor(params_emp$a_pos_emp, params_emp$a_neg_emp,method = c("pearson")))
+cor[8,] <- as.data.frame(cor(params_emp$a_pos_emp, params_emp$b1_emp,method = c("pearson")))
+cor[9,] <- as.data.frame(cor(params_emp$a_neg_emp, params_emp$b1_emp,method = c("pearson")))
+cor[7:9,2] <- c("a+_a-", "a+_b1", "a-_b1")
+cor[7:9,3] <- "Out-of-sample Prior"
+
+#Plot
+#Plot
+ggplot(data=subset(cor, model != "No Pooling"), aes(x=params, y=cor, fill=model, color = model)) +
+    geom_bar(stat="identity", color="black", position=position_dodge()) +
+    scale_fill_manual(values = c("#08519c", "#6baed6", "#3182bd")) + scale_color_manual(values = c("#6baed6", "#3182bd", "#08519c")) + 
+    theme_bw() + geom_hline(yintercept = 0) + labs(y = "Pearson's Correlation Coefficient", x="") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) 
+```
+###Correlation plot (v2)
+```{r Bonus_fig7, include = FALSE}
+#one the "cor_values" df has been loaded
+cor_values$model <- c("Hierarchical pooling","No pooling","Out-of-sample prior")
+cor_values_40$model <- c("Hierarchical pooling","No pooling","Out-of-sample prior")
+
+ggplot(data=cor_values, aes(x=params, y=mean, fill=model, color = model)) +
+    geom_bar(stat="identity", color="black", position=position_dodge()) +
+    scale_fill_manual(values = c("#08519c","#6baed6","#3182bd")) + scale_color_manual(values = c("#08519c","#6baed6","#3182bd")) + geom_errorbar(aes(ymax = mean+sd, ymin = mean-sd), color = "black",position=position_dodge(0.9), width = 0.2) +
+    theme_bw() + geom_hline(yintercept = 0) + labs(y = "Pearson's Correlation Coefficient", x="") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) 
+
+
+ggplot(data=cor_values, aes(x=params, y=mean, fill=model, color = model)) +
+scale_fill_manual(values = c("#08519c","#6baed6","#3182bd")) + scale_color_manual(values = c("#08519c","#6baed6","#3182bd")) + geom_pointrange(aes(ymax = mean+sd, ymin = mean-sd, color = model),position=position_dodge(0.5), lwd =2) +
+    theme_bw() + geom_hline(yintercept = 0) + labs(y = "Pearson's Correlation Coefficient", x="") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) + coord_flip() +  facet_wrap(vars(params), nrow = 5, scales = "free")
+
+
+#using the same 40 people only
+ggplot(data=cor_values_40, aes(x=param, y=mean, fill=model, color = model)) +
+    scale_fill_manual(values = c( "#08519c", "#6baed6","#3182bd")) + scale_color_manual(values = c("#08519c","#6baed6","#3182bd")) + geom_pointrange(aes(ymax = mean+sd, ymin = mean-sd, color = model),position=position_dodge(0.5), lwd =2) +
+    theme_bw() + geom_hline(yintercept = 0) + labs(y = "Pearson's Correlation Coefficient", x="") +
+    theme(plot.subtitle = element_text(size = 12),
+          legend.title = element_blank(), 
+          legend.key.size = unit(1.5, 'lines'),
+          legend.text=element_text(family = "Helvetica", size=12, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.title.x = element_text(family = "Helvetica", size=16, margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(family = "Helvetica", size=16, margin = margin(t = 0, r = 25, b = 0, l = 0)),
+          axis.text = element_text(size=14), panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) + coord_flip()
+
+#test for significance
+#load in all the "cor_distrib" dataframes
+
+#a_neg vs b1 
+#positive means emp is better
+a_neg_b1_empInf <- (abs(`cor_distrib_a-/b1_inf`[,2]) - abs(`cor_distrib_a-/b1_emp`[,2]))
+a_neg_b1_emph <- (abs(`cor_distrib_a-/b1_h`[,2]) - abs(`cor_distrib_a-/b1_emp`[,2]))
+#positive means h is better
+a_neg_b1_hInf <- (abs(`cor_distrib_a-/b1_inf`[,2]) - abs(`cor_distrib_a-/b1_h`[,2]))
+
+#a_pos vs b1
+#positive means emp is better
+a_pos_b1_empInf <- (abs(`cor_distrib+a+/b1_inf`[,2]) - abs(`cor_distrib_a+/b1_emp`[,2]))
+a_pos_b1_emph <- (abs(`cor_distrib_a+/b1_h`[,2]) - abs(`cor_distrib_a+/b1_emp`[,2]))
+#positive means h is better
+a_pos_b1_hInf <- (abs(`cor_distrib+a+/b1_inf`[,2]) - abs(`cor_distrib_a+/b1_h`[,2]))
+
+#a_pos vs a_neg
+#positive means emp is better
+a_pos_neg_empInf <- (abs(`cor_distrib_a+/a-_inf`[,2]) - abs(`cor_distrib_a+/a-_emp`[,2]))
+a_pos_neg_emph <- (abs(`cor_distrib_a+/a-_h`[,2]) - abs(`cor_distrib_a+/a-_emp`[,2]))
+#positive means h is better
+a_pos_neg_hInf <- (abs(`cor_distrib_a+/a-_inf`[,2]) - abs(`cor_distrib_a+/a-_h`[,2]))
+
+#get significance: how much is above or below zero of the average across correlations
+#emp vs hierarchical
+emp_vs_h <- as.data.frame(cbind(a_pos_b1_emph,a_pos_neg_emph, a_neg_b1_emph))
+emp_vs_h_test <- rowMeans(emp_vs_h)
+#proportion
+length(which(emp_vs_h_test>0))/4000
+
+#hierarchical vs no pooling
+inf_vs_h <- as.data.frame(cbind(a_pos_b1_hInf,a_pos_neg_hInf, a_neg_b1_hInf))
+inf_vs_h_test <- rowMeans(inf_vs_h)
+#proportion
+length(which(inf_vs_h_test>0))/4000
+
+#no pooling vs empirical
+inf_vs_emp <- as.data.frame(cbind(a_pos_b1_empInf,a_pos_neg_empInf, a_neg_b1_empInf))
+inf_vs_emp_test <- rowMeans(inf_vs_emp)
+#proportion
+length(which(inf_vs_emp_test>0))/4000
+
+
+####for version with only same 40 people
+#a_neg vs b1 
+#positive means emp is better
+a_neg_b1_empInf <- (abs(`cor_distrib_40_a.:b1_inf`[,2]) - abs(`cor_distrib_a-/b1_emp`[,2]))
+#positive means h is better
+a_neg_b1_emph <- (abs(`cor_distrib_a-/b1_emp`[,2]) - abs(`cor_distrib_40_a.:b1_h`[,2]))
+#positive means h is better
+a_neg_b1_hInf <- (abs(`cor_distrib_40_a.:b1_inf`[,2]) - abs(`cor_distrib_40_a.:b1_h`[,2]))
+
+#a_pos vs b1 
+#positive means emp is better
+a_pos_b1_empInf <- (abs(`cor_distrib_40_a+:b1_inf`[,2]) - abs(`cor_distrib_a+/b1_emp`[,2]))
+#positive means h is better
+a_pos_b1_emph <- (abs(`cor_distrib_a+/b1_emp`[,2]) - abs(`cor_distrib_40_a+:b1_h`[,2]))
+#positive means h is better
+a_pos_b1_hInf <- (abs(`cor_distrib_40_a+:b1_inf`[,2]) - abs(`cor_distrib_40_a+:b1_h`[,2]))
+
+#get averages
+#emp vs hierarchical
+emp_vs_h <- as.data.frame(cbind(a_pos_b1_emph, a_neg_b1_emph))
+emp_vs_h_test <- rowMeans(emp_vs_h)
+#proportion
+length(which(emp_vs_h_test>0))/4000
+
+#emp vs inf
+emp_vs_inf <- as.data.frame(cbind(a_pos_b1_empInf, a_neg_b1_empInf))
+emp_vs_inf_test <- rowMeans(emp_vs_inf)
+#proportion
+length(which(emp_vs_inf_test>0))/4000
+
+#inf vs h
+h_vs_inf <- as.data.frame(cbind(a_pos_b1_hInf, a_neg_b1_hInf))
+h_vs_inf_test <- rowMeans(h_vs_inf)
+#proportion
+length(which(h_vs_inf_test>0))/4000
+```
